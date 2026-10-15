@@ -41,8 +41,12 @@ What you will learn
     import pandas as pd
     from scipy import stats
     
+    import pcntoolkit.util.output
     from pcntoolkit import ZDiffScore, ZGainScore, load_correlation_matrix, load_lnm
     from pcntoolkit.util.plotter import plot_thrivelines
+    
+    # Hide PCNtoolkit's "Process: ..." progress messages
+    pcntoolkit.util.output.Output.set_show_messages(False)
     
     # Right middle frontal gyrus thickness: the region the example correlation
     # matrix covers.
@@ -62,20 +66,6 @@ scanned twice about a year apart (`Rehák Bučková et al.,
     lnm = load_lnm()
     lnm.to_dataframe()[["subject_ids", "visits", "X", "batch_effects"]].head()
 
-
-.. code:: text
-
-    Process: 44328 - 2026-10-15 16:01:05 - Removed 0 NANs
-    Process: 44328 - 2026-10-15 16:01:05 - Dataset "lnm" created.
-        - 330 observations
-        - 165 unique subjects
-        - 1 covariates
-        - 185 response variables
-        - 2 batch effects:
-        	sex (2)
-    	site (1)
-        
-    
 
 
 
@@ -199,31 +189,6 @@ the example correlation matrix covers only that one.
     controls = load_lnm(group="control").sel(response_vars=[REGION])
     patients = load_lnm(group="patient").sel(response_vars=[REGION])
 
-
-.. code:: text
-
-    Process: 44328 - 2026-10-15 16:01:05 - Removed 0 NANs
-    Process: 44328 - 2026-10-15 16:01:05 - Dataset "lnm_control" created.
-        - 134 observations
-        - 67 unique subjects
-        - 1 covariates
-        - 185 response variables
-        - 2 batch effects:
-        	sex (2)
-    	site (1)
-        
-    Process: 44328 - 2026-10-15 16:01:05 - Removed 0 NANs
-    Process: 44328 - 2026-10-15 16:01:05 - Dataset "lnm_patient" created.
-        - 196 observations
-        - 98 unique subjects
-        - 1 covariates
-        - 185 response variables
-        - 2 batch effects:
-        	sex (2)
-    	site (1)
-        
-    
-
 2. The correlation matrix
 -------------------------
 
@@ -303,33 +268,6 @@ the LNM site, which the model has never seen.
     )
     fcon1000_model.fit(fcon1000);
 
-
-.. code:: text
-
-    Process: 44328 - 2026-10-15 16:01:06 - Removed 0 NANs
-    Process: 44328 - 2026-10-15 16:01:06 - Dataset "fcon1000" created.
-        - 1078 observations
-        - 1078 unique subjects
-        - 1 covariates
-        - 217 response variables
-        - 2 batch effects:
-        	sex (2)
-    	site (23)
-        
-    Process: 44328 - 2026-10-15 16:01:06 - Fitting models on 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:06 - Fitting model for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:06 - Making predictions on 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:06 - Computing z-scores for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:06 - Computing z-scores for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:06 - Computing centiles for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:06 - Computing centiles for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:06 - Computing log-probabilities for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:06 - Computing log-probabilities for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:06 - Computing log-probabilities for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:06 - Computing yhat for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:06 - Computing yhat for rh_G_front_middle_thickness.
-    
-
 .. code:: ipython3
 
     # Get the controls' subject IDs and visit numbers
@@ -367,84 +305,6 @@ the LNM site, which the model has never seen.
     # Get a z-score for every visit of the reference controls and the patients
     lnm_model.predict(reference_controls);
     lnm_model.predict(patients);
-
-
-.. code:: text
-
-    Process: 44328 - 2026-10-15 16:01:06 - Transferring models on 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:06 - Transferring model for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:06 - Saving model to:
-    	C:\Users\kontsi/.pcntoolkit\saves_transfer.
-    Process: 44328 - 2026-10-15 16:01:06 - Making predictions on 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:06 - Computing z-scores for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:06 - Computing z-scores for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:06 - Computing centiles for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:06 - Computing centiles for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:06 - Computing log-probabilities for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:06 - Computing log-probabilities for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:06 - Computing log-probabilities for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:06 - Computing yhat for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:06 - Computing yhat for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:07 - Dataset "centile" created.
-        - 150 observations
-        - 150 unique subjects
-        - 1 covariates
-        - 1 response variables
-        - 2 batch effects:
-        	sex (1)
-    	site (1)
-        
-    Process: 44328 - 2026-10-15 16:01:07 - Computing centiles for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:07 - Computing centiles for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:07 - Harmonizing data on 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:07 - Harmonizing data for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:07 - Making predictions on 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:07 - Computing z-scores for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:07 - Computing z-scores for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:07 - Computing centiles for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:07 - Computing centiles for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:07 - Computing log-probabilities for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:07 - Computing log-probabilities for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:07 - Computing log-probabilities for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:07 - Computing yhat for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:07 - Computing yhat for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:08 - Dataset "centile" created.
-        - 150 observations
-        - 150 unique subjects
-        - 1 covariates
-        - 1 response variables
-        - 2 batch effects:
-        	sex (1)
-    	site (1)
-        
-    Process: 44328 - 2026-10-15 16:01:08 - Computing centiles for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:08 - Computing centiles for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:08 - Harmonizing data on 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:08 - Harmonizing data for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:08 - Making predictions on 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:08 - Computing z-scores for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:08 - Computing z-scores for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:08 - Computing centiles for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:08 - Computing centiles for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:08 - Computing log-probabilities for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:08 - Computing log-probabilities for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:08 - Computing log-probabilities for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:08 - Computing yhat for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:08 - Computing yhat for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:08 - Dataset "centile" created.
-        - 150 observations
-        - 150 unique subjects
-        - 1 covariates
-        - 1 response variables
-        - 2 batch effects:
-        	sex (1)
-    	site (1)
-        
-    Process: 44328 - 2026-10-15 16:01:08 - Computing centiles for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:08 - Computing centiles for rh_G_front_middle_thickness.
-    Process: 44328 - 2026-10-15 16:01:08 - Harmonizing data on 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:08 - Harmonizing data for rh_G_front_middle_thickness.
-    
 
 4. z-diff and z-gain
 --------------------
@@ -814,21 +674,6 @@ normative model’s centile chart.
     plt.show()
 
 
-.. code:: text
 
-    Process: 44328 - 2026-10-15 16:01:09 - Dataset "centile" created.
-        - 150 observations
-        - 150 unique subjects
-        - 1 covariates
-        - 1 response variables
-        - 2 batch effects:
-        	sex (1)
-    	site (1)
-        
-    Process: 44328 - 2026-10-15 16:01:09 - Computing centiles for 1 response variables.
-    Process: 44328 - 2026-10-15 16:01:09 - Computing centiles for rh_G_front_middle_thickness.
-    
-
-
-.. image:: 14_longitudinal_modelling_files/14_longitudinal_modelling_24_1.png
+.. image:: 14_longitudinal_modelling_files/14_longitudinal_modelling_24_0.png
 

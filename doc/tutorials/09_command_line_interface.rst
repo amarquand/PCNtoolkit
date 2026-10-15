@@ -178,7 +178,7 @@ Constructing command
 
 .. code:: text
 
-    normative -a blr -f fit_predict -c /home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/covariates.csv -r /home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/responses.csv -t /home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/test_responses.csv -e /home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/test_covariates.csv -k 5 be=/home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/batch_effects.csv t_be=/home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/test_batch_effects.csv cross_validate=True parallelize=False job_type=local n_jobs=2 temp_dir=resources/cli_example/temp log_dir=resources/cli_example/log environment=/opt/hostedtoolcache/Python/3.13.15/x64 save_dir=resources/cli_example/blr_cli/save_dir savemodel=True saveresults=True basis_function=linear inscaler=standardize outscaler=standardize optimizer=l-bfgs-b n_iter=200 heteroskedastic=True fixed_effect=True warp=WarpSinhArcsinh warp_reparam=True
+    normative -a blr -f fit_predict -c c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\covariates.csv -r c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\responses.csv -t c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\test_responses.csv -e c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\test_covariates.csv -k 5 be=c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\batch_effects.csv t_be=c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\test_batch_effects.csv cross_validate=True parallelize=False job_type=local n_jobs=2 temp_dir=resources\cli_example\temp log_dir=resources\cli_example\log environment=c:\Users\kontsi\AppData\Local\anaconda3\envs save_dir=resources\cli_example\blr_cli\save_dir savemodel=True saveresults=True basis_function=linear inscaler=standardize outscaler=standardize optimizer=l-bfgs-b n_iter=200 heteroskedastic=True fixed_effect=True warp=WarpSinhArcsinh warp_reparam=True
     
 
 Running command
@@ -191,827 +191,403 @@ Running command
 
 .. code:: text
 
-    Process: 2973 - 2026-09-25 17:56:46 - Dataset "fit_data" created.
-
+    Process: 34708 - 2026-10-15 16:52:12 - Dataset "fit_data" created.
         - 862 observations
-
         - 862 unique subjects
-
         - 1 covariates
-
         - 2 response variables
-
         - 2 batch effects:
-
         	batch_effect_0 (2)
-
     	batch_effect_1 (23)
-
         
-
-    Process: 2973 - 2026-09-25 17:56:46 - Dataset "predict_data" created.
-
+    Process: 34708 - 2026-10-15 16:52:12 - Dataset "predict_data" created.
         - 216 observations
-
         - 216 unique subjects
-
         - 1 covariates
-
         - 2 response variables
-
         - 2 batch effects:
-
         	batch_effect_0 (2)
-
     	batch_effect_1 (23)
-
         
+    Process: 34708 - 2026-10-15 16:52:12 - Task ID created: fit_predict_fit_data__2026-10-15_16-52-12_71.303223
+    Process: 34708 - 2026-10-15 16:52:12 - Temporary directory created:
+    	c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\temp\fit_predict_fit_data__2026-10-15_16-52-12_71.303223
+    Process: 34708 - 2026-10-15 16:52:12 - Log directory created:
+    	c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\log\fit_predict_fit_data__2026-10-15_16-52-12_71.303223
+    Process: 34708 - 2026-10-15 16:52:12 - Fitting models on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:12 - Fitting model for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:12 - Fitting model for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:12 - Saving model to:
+    	resources\cli_example\blr_cli\save_dir\folds\fold_0.
+    Process: 34708 - 2026-10-15 16:52:12 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:13 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:13 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:13 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:13 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:13 - Harmonizing data for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:13 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:14 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:14 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:14 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:14 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:14 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:14 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:14 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:14 - Harmonizing data for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:15 - Fitting models on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:15 - Fitting model for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:15 - Fitting model for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:15 - Saving model to:
+    	resources\cli_example\blr_cli\save_dir\folds\fold_1.
+    Process: 34708 - 2026-10-15 16:52:15 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:16 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:16 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:16 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:16 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:16 - Harmonizing data for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:16 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:17 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:17 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:17 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:17 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:17 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:17 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:17 - Harmonizing data for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:18 - Fitting models on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:18 - Fitting model for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:18 - Fitting model for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:18 - Saving model to:
+    	resources\cli_example\blr_cli\save_dir\folds\fold_2.
+    Process: 34708 - 2026-10-15 16:52:18 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:19 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:19 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:19 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:19 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:19 - Harmonizing data for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:19 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:20 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:20 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:20 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:20 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:20 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:20 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:20 - Harmonizing data for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:20 - Fitting models on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:20 - Fitting model for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:20 - Fitting model for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:21 - Saving model to:
+    	resources\cli_example\blr_cli\save_dir\folds\fold_3.
+    Process: 34708 - 2026-10-15 16:52:21 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:21 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:21 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:21 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:21 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:21 - Harmonizing data for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:22 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:23 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:23 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:23 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:23 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:23 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:23 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:23 - Harmonizing data for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:23 - Fitting models on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:23 - Fitting model for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:23 - Fitting model for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:24 - Saving model to:
+    	resources\cli_example\blr_cli\save_dir\folds\fold_4.
+    Process: 34708 - 2026-10-15 16:52:24 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:24 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:24 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:24 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:24 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:24 - Harmonizing data for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:25 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:26 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:26 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:26 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:26 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:26 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:26 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:26 - Harmonizing data for response_var_0.
+    
 
-    Process: 2973 - 2026-09-25 17:56:46 - Task ID created: fit_predict_fit_data__2026-09-25_17:56:46_419.935547
+.. code:: text
 
-    Process: 2973 - 2026-09-25 17:56:46 - Temporary directory created:
-
-    	/home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/temp/fit_predict_fit_data__2026-09-25_17:56:46_419.935547
-
-    Process: 2973 - 2026-09-25 17:56:46 - Log directory created:
-
-    	/home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/log/fit_predict_fit_data__2026-09-25_17:56:46_419.935547
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/output.py:309: UserWarning: Process: 2973 - 2026-09-25 17:56:46 - Predict data not used in k-fold cross-validation
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\output.py:342: UserWarning: Process: 34708 - 2026-10-15 16:52:12 - Predict data not used in k-fold cross-validation
       warnings.warn(message, category)
-
-    /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages/sklearn/model_selection/_split.py:812: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=5.
-
+    C:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\sklearn\model_selection\_split.py:813: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=5.
       warnings.warn(
-
-    Process: 2973 - 2026-09-25 17:56:46 - Fitting models on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:46 - Fitting model for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:46 - Fitting model for response_var_1.
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.523723946631791e-27.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.523723939977167e-27.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/output.py:309: UserWarning: Process: 2973 - 2026-09-25 17:56:46 - Posterior estimation failed: 
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\output.py:342: UserWarning: Process: 34708 - 2026-10-15 16:52:12 - Posterior estimation failed: 
     Matrix is not positive definite. 
-
     The optimizer could not find a stable solution. Retrying optimization.
-
       warnings.warn(message, category)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.375496563279125e-27.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.3754965555983415e-27.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.9980721138137064e-27.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.998072107792363e-27.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.746691663731469e-27.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.746691655603508e-27.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.104659065295494e-27.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.1046590579409974e-27.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    Process: 2973 - 2026-09-25 17:56:47 - Saving model to:
-
-    	resources/cli_example/blr_cli/save_dir/folds/fold_0.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Making predictions on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Computing z-scores for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Computing z-scores for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Computing z-scores for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Computing log-probabilities for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Computing log-probabilities for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Computing yhat for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Computing yhat for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Computing yhat for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 2973 - 2026-09-25 17:56:47 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Harmonizing data on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Harmonizing data for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:47 - Harmonizing data for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:48 - Making predictions on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:48 - Computing z-scores for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:48 - Computing z-scores for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:48 - Computing z-scores for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:48 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:48 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:48 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:48 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:48 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:48 - Computing log-probabilities for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:48 - Computing log-probabilities for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:48 - Computing yhat for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:48 - Computing yhat for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:48 - Computing yhat for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:49 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 2973 - 2026-09-25 17:56:49 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:49 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:49 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:49 - Harmonizing data on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:49 - Harmonizing data for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:49 - Harmonizing data for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:50 - Fitting models on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:50 - Fitting model for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:50 - Fitting model for response_var_1.
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.2455126268504203e-20.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.6685293780657852e-18.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/output.py:309: UserWarning: Process: 2973 - 2026-09-25 17:56:50 - Posterior estimation failed: 
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\output.py:342: UserWarning: Process: 34708 - 2026-10-15 16:52:18 - Posterior estimation failed: 
     Matrix is not positive definite. 
-
     The optimizer could not find a stable solution. Retrying optimization.
-
       warnings.warn(message, category)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.910057133212752e-20.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.157907796551295e-18.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.8415638861183265e-20.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.581032369390217e-18.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.185259614266013e-20.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.3509470739771384e-18.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.691929377086917e-20.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.766179425038374e-17.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages/scipy/optimize/_numdiff.py:711: RuntimeWarning: overflow encountered in divide
-
-      df_dx = [delf / delx for delf, delx in zip(df, dx)]
-
-    Process: 2973 - 2026-09-25 17:56:50 - Saving model to:
-
-    	resources/cli_example/blr_cli/save_dir/folds/fold_1.
-
-    Process: 2973 - 2026-09-25 17:56:50 - Making predictions on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:50 - Computing z-scores for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:50 - Computing z-scores for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:50 - Computing z-scores for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:50 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:50 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:50 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:50 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:50 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:50 - Computing log-probabilities for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:50 - Computing log-probabilities for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:50 - Computing yhat for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:50 - Computing yhat for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:50 - Computing yhat for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:51 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 2973 - 2026-09-25 17:56:51 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:51 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:51 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:51 - Harmonizing data on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:51 - Harmonizing data for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:51 - Harmonizing data for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:52 - Making predictions on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:52 - Computing z-scores for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:52 - Computing z-scores for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:52 - Computing z-scores for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:52 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:52 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:52 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:52 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:52 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:52 - Computing log-probabilities for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:52 - Computing log-probabilities for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:52 - Computing yhat for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:52 - Computing yhat for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:52 - Computing yhat for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:53 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 2973 - 2026-09-25 17:56:53 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:53 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:53 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:53 - Harmonizing data on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:53 - Harmonizing data for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:53 - Harmonizing data for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:53 - Fitting models on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:53 - Fitting model for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:54 - Fitting model for response_var_1.
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.701875421761123e-19.
-
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/output.py:309: UserWarning: Process: 2973 - 2026-09-25 17:56:54 - Posterior estimation failed: 
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\output.py:342: UserWarning: Process: 34708 - 2026-10-15 16:52:21 - Posterior estimation failed: 
     Matrix is not positive definite. 
-
     The optimizer could not find a stable solution. Retrying optimization.
-
       warnings.warn(message, category)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.6521548448675865e-19.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.117392383857963e-18.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.3656485817707845e-19.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.6239455744947366e-18.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.502124577440806e-19.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.17546773588249e-18.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    Process: 2973 - 2026-09-25 17:56:54 - Saving model to:
-
-    	resources/cli_example/blr_cli/save_dir/folds/fold_2.
-
-    Process: 2973 - 2026-09-25 17:56:54 - Making predictions on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:54 - Computing z-scores for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:54 - Computing z-scores for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:54 - Computing z-scores for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:54 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:54 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:54 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:54 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:54 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:54 - Computing log-probabilities for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:54 - Computing log-probabilities for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:54 - Computing yhat for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:54 - Computing yhat for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:54 - Computing yhat for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:55 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 2973 - 2026-09-25 17:56:55 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:55 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:55 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:55 - Harmonizing data on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:55 - Harmonizing data for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:55 - Harmonizing data for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Making predictions on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Computing z-scores for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Computing z-scores for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Computing z-scores for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Computing log-probabilities for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Computing log-probabilities for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Computing yhat for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Computing yhat for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Computing yhat for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 2973 - 2026-09-25 17:56:56 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Harmonizing data on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Harmonizing data for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:56 - Harmonizing data for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:57 - Fitting models on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:57 - Fitting model for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:57 - Fitting model for response_var_1.
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 2.345402012863007e-18.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0452962015588918e-62.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/output.py:309: UserWarning: Process: 2973 - 2026-09-25 17:56:58 - Posterior estimation failed: 
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\output.py:342: UserWarning: Process: 34708 - 2026-10-15 16:52:24 - Posterior estimation failed: 
     Matrix is not positive definite. 
-
     The optimizer could not find a stable solution. Retrying optimization.
-
       warnings.warn(message, category)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.416128457233547e-18.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.161818075084269e-55.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.01776121710389e-18.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.204861832584378e-55.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.4551614365857112e-18.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0207110394196985e-62.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages/scipy/optimize/_numdiff.py:711: RuntimeWarning: overflow encountered in divide
-
-      df_dx = [delf / delx for delf, delx in zip(df, dx)]
-
-    Process: 2973 - 2026-09-25 17:56:58 - Saving model to:
-
-    	resources/cli_example/blr_cli/save_dir/folds/fold_3.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Making predictions on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Computing z-scores for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Computing z-scores for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Computing z-scores for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Computing log-probabilities for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Computing log-probabilities for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Computing yhat for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Computing yhat for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Computing yhat for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 2973 - 2026-09-25 17:56:58 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Harmonizing data on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Harmonizing data for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:58 - Harmonizing data for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:59 - Making predictions on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:59 - Computing z-scores for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:59 - Computing z-scores for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:59 - Computing z-scores for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:59 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:59 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:59 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:59 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:59 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:59 - Computing log-probabilities for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:59 - Computing log-probabilities for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:56:59 - Computing yhat for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:56:59 - Computing yhat for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:56:59 - Computing yhat for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:57:00 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 2973 - 2026-09-25 17:57:00 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:00 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:57:00 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:57:00 - Harmonizing data on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:00 - Harmonizing data for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:57:00 - Harmonizing data for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:57:01 - Fitting models on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:01 - Fitting model for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:57:01 - Fitting model for response_var_1.
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.204862148507314e-55.
-
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/output.py:309: UserWarning: Process: 2973 - 2026-09-25 17:57:01 - Posterior estimation failed: 
-
-    Matrix is not positive definite. 
-
-    The optimizer could not find a stable solution. Retrying optimization.
-
-      warnings.warn(message, category)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.1618189276041684e-55.
-
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.204835921010135e-55.
-
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.204861445939724e-55.
-
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    Process: 2973 - 2026-09-25 17:57:01 - Saving model to:
-
-    	resources/cli_example/blr_cli/save_dir/folds/fold_4.
-
-    Process: 2973 - 2026-09-25 17:57:01 - Making predictions on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:01 - Computing z-scores for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:01 - Computing z-scores for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:57:01 - Computing z-scores for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:57:01 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:01 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:57:01 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:57:01 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:01 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:01 - Computing log-probabilities for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:57:01 - Computing log-probabilities for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:57:01 - Computing yhat for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:01 - Computing yhat for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:57:01 - Computing yhat for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:57:02 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 2973 - 2026-09-25 17:57:02 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:02 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:57:02 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:57:02 - Harmonizing data on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:02 - Harmonizing data for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:57:02 - Harmonizing data for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:57:03 - Making predictions on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:03 - Computing z-scores for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:03 - Computing z-scores for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:57:03 - Computing z-scores for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:57:03 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:03 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:57:03 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:57:03 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:03 - Computing log-probabilities for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:03 - Computing log-probabilities for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:57:03 - Computing log-probabilities for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:57:03 - Computing yhat for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:03 - Computing yhat for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:57:03 - Computing yhat for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:57:04 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 2973 - 2026-09-25 17:57:04 - Computing centiles for 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:04 - Computing centiles for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:57:04 - Computing centiles for response_var_0.
-
-    Process: 2973 - 2026-09-25 17:57:04 - Harmonizing data on 2 response variables.
-
-    Process: 2973 - 2026-09-25 17:57:04 - Harmonizing data for response_var_1.
-
-    Process: 2973 - 2026-09-25 17:57:04 - Harmonizing data for response_var_0.
-
-
+    
 
 You can find the results in the
 ``resources/cli_example/blr_cli/save_dir`` folder.
@@ -1062,68 +638,68 @@ You can find the results in the
       <tbody>
         <tr>
           <th>EXPV</th>
-          <td>4.678718e-01</td>
-          <td>2.027784e-01</td>
+          <td>4.679810e-01</td>
+          <td>2.030427e-01</td>
         </tr>
         <tr>
           <th>Kurtosis</th>
-          <td>-1.804822e-01</td>
-          <td>-8.249590e-02</td>
+          <td>-1.876473e-01</td>
+          <td>-7.910999e-02</td>
         </tr>
         <tr>
           <th>MACE</th>
-          <td>1.615801e-01</td>
+          <td>1.646634e-01</td>
           <td>1.748506e-01</td>
         </tr>
         <tr>
           <th>MAPE</th>
-          <td>2.359962e-02</td>
-          <td>3.068768e-01</td>
+          <td>2.360966e-02</td>
+          <td>3.066030e-01</td>
         </tr>
         <tr>
           <th>MLL</th>
-          <td>1.128491e+00</td>
-          <td>8.335007e-01</td>
+          <td>1.128169e+00</td>
+          <td>8.333058e-01</td>
         </tr>
         <tr>
           <th>MSLL</th>
-          <td>-3.151540e-01</td>
-          <td>-8.652691e-01</td>
+          <td>-3.154758e-01</td>
+          <td>-8.654640e-01</td>
         </tr>
         <tr>
           <th>R2</th>
-          <td>4.678505e-01</td>
-          <td>2.008805e-01</td>
+          <td>4.679601e-01</td>
+          <td>2.011754e-01</td>
         </tr>
         <tr>
           <th>RMSE</th>
-          <td>7.323381e-02</td>
-          <td>9.002539e+02</td>
+          <td>7.322627e-02</td>
+          <td>9.000878e+02</td>
         </tr>
         <tr>
           <th>Rho</th>
-          <td>6.422068e-01</td>
-          <td>4.885517e-01</td>
+          <td>6.433635e-01</td>
+          <td>4.877740e-01</td>
         </tr>
         <tr>
           <th>Rho_p</th>
-          <td>1.691404e-21</td>
-          <td>9.164062e-12</td>
+          <td>1.359551e-21</td>
+          <td>9.994549e-12</td>
         </tr>
         <tr>
           <th>SMSE</th>
-          <td>5.321495e-01</td>
-          <td>7.991195e-01</td>
+          <td>5.320399e-01</td>
+          <td>7.988246e-01</td>
         </tr>
         <tr>
           <th>ShapiroW</th>
-          <td>9.839388e-01</td>
-          <td>9.563680e-01</td>
+          <td>9.841289e-01</td>
+          <td>9.565320e-01</td>
         </tr>
         <tr>
           <th>Skewness</th>
-          <td>-2.081598e-01</td>
-          <td>6.883883e-01</td>
+          <td>-2.071004e-01</td>
+          <td>6.880513e-01</td>
         </tr>
       </tbody>
     </table>
@@ -1152,6 +728,8 @@ HBR example
     tune = 500
     chains = 4
     nuts_sampler = "nutpie"
+    # The progress bar cannot be shown when the CLI runs from a notebook cell
+    progressbar = "False"
     
     likelihood = "Normal"
     linear_mu = "True"
@@ -1170,14 +748,14 @@ Constructing command
     args = f"-a {alg} -f {func} -c {cov} -r {resp} -t {t_resp} -e {t_cov}"
     kwargs = f"be={be} t_be={t_be}"
     normative_model_kwargs = f"save_dir={save_dir} savemodel={savemodel} saveresults={saveresults} basis_function={basis_function} inscaler={inscaler} outscaler={outscaler}"
-    hbr_kwargs = f"draws={draws} tune={tune} chains={chains} nuts_sampler={nuts_sampler} likelihood={likelihood} linear_mu={linear_mu} random_intercept_mu={random_intercept_mu} random_slope_mu={random_slope_mu} linear_sigma={linear_sigma} random_intercept_sigma={random_intercept_sigma} random_slope_sigma={random_slope_sigma}"
+    hbr_kwargs = f"draws={draws} tune={tune} chains={chains} nuts_sampler={nuts_sampler} progressbar={progressbar} likelihood={likelihood} linear_mu={linear_mu} random_intercept_mu={random_intercept_mu} random_slope_mu={random_slope_mu} linear_sigma={linear_sigma} random_intercept_sigma={random_intercept_sigma} random_slope_sigma={random_slope_sigma}"
     full_command = f"{command} {args} {kwargs} {normative_model_kwargs} {hbr_kwargs}"
     print(full_command)
 
 
 .. code:: text
 
-    normative -a hbr -f fit_predict -c /home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/covariates.csv -r /home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/responses.csv -t /home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/test_responses.csv -e /home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/test_covariates.csv be=/home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/batch_effects.csv t_be=/home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/test_batch_effects.csv save_dir=resources/cli_example/hbr/save_dir savemodel=True saveresults=True basis_function=bspline inscaler=standardize outscaler=standardize draws=1000 tune=500 chains=4 nuts_sampler=nutpie likelihood=Normal linear_mu=True random_intercept_mu=True random_slope_mu=False linear_sigma=True random_intercept_sigma=False random_slope_sigma=False
+    normative -a hbr -f fit_predict -c c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\covariates.csv -r c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\responses.csv -t c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\test_responses.csv -e c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\test_covariates.csv be=c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\batch_effects.csv t_be=c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\test_batch_effects.csv save_dir=resources\cli_example\hbr\save_dir savemodel=True saveresults=True basis_function=bspline inscaler=standardize outscaler=standardize draws=1000 tune=500 chains=4 nuts_sampler=nutpie progressbar=False likelihood=Normal linear_mu=True random_intercept_mu=True random_slope_mu=False linear_sigma=True random_intercept_sigma=False random_slope_sigma=False
     
 
 Running command
@@ -1190,2077 +768,150 @@ Running command
 
 .. code:: text
 
-    Process: 2984 - 2026-09-25 17:57:08 - No log directory specified. Using default log directory: /home/runner/.pcntoolkit/logs
-
-    Process: 2984 - 2026-09-25 17:57:08 - No temporary directory specified. Using default temporary directory: /home/runner/.pcntoolkit/temp
-
-    Process: 2984 - 2026-09-25 17:57:08 - Dataset "fit_data" created.
-
+    Process: 35260 - 2026-10-15 16:52:31 - No log directory specified. Using default log directory: C:\Users\kontsi/.pcntoolkit\logs
+    Process: 35260 - 2026-10-15 16:52:31 - No temporary directory specified. Using default temporary directory: C:\Users\kontsi/.pcntoolkit\temp
+    Process: 35260 - 2026-10-15 16:52:31 - Dataset "fit_data" created.
         - 862 observations
-
         - 862 unique subjects
-
         - 1 covariates
-
         - 2 response variables
-
         - 2 batch effects:
-
         	batch_effect_0 (2)
-
     	batch_effect_1 (23)
-
         
-
-    Process: 2984 - 2026-09-25 17:57:08 - Dataset "predict_data" created.
-
+    Process: 35260 - 2026-10-15 16:52:31 - Dataset "predict_data" created.
         - 216 observations
-
         - 216 unique subjects
-
         - 1 covariates
-
         - 2 response variables
-
         - 2 batch effects:
-
         	batch_effect_0 (2)
-
     	batch_effect_1 (23)
-
         
+    Process: 35260 - 2026-10-15 16:52:31 - Task ID created: fit_predict_fit_data__2026-10-15_16-52-31_272.066895
+    Process: 35260 - 2026-10-15 16:52:31 - Temporary directory created:
+    	C:\Users\kontsi/.pcntoolkit\temp\fit_predict_fit_data__2026-10-15_16-52-31_272.066895
+    Process: 35260 - 2026-10-15 16:52:31 - Log directory created:
+    	C:\Users\kontsi/.pcntoolkit\logs\fit_predict_fit_data__2026-10-15_16-52-31_272.066895
+    Process: 35260 - 2026-10-15 16:52:31 - Fitting models on 2 response variables.
+    Process: 35260 - 2026-10-15 16:52:31 - Fitting model for response_var_0.
+    Process: 35260 - 2026-10-15 16:52:51 - Fitting model for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:02 - Saving model to:
+    	resources\cli_example\hbr\save_dir.
+    Process: 35260 - 2026-10-15 16:53:04 - Making predictions on 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:04 - Computing z-scores for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:04 - Computing z-scores for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:05 - Computing z-scores for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:05 - Computing centiles for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:05 - Computing centiles for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:08 - Computing centiles for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:10 - Computing log-probabilities for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:10 - Computing log-probabilities for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:10 - Computing log-probabilities for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:12 - Computing log-probabilities for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:12 - Computing yhat for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:14 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 35260 - 2026-10-15 16:53:14 - Computing centiles for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:14 - Computing centiles for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:16 - Computing centiles for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:19 - Harmonizing data on 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:19 - Harmonizing data for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:20 - Harmonizing data for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:22 - Making predictions on 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:22 - Computing z-scores for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:22 - Computing z-scores for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:22 - Computing z-scores for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:23 - Computing centiles for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:23 - Computing centiles for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:25 - Computing centiles for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:27 - Computing log-probabilities for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:27 - Computing log-probabilities for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:27 - Computing log-probabilities for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:27 - Computing log-probabilities for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:27 - Computing yhat for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:29 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 35260 - 2026-10-15 16:53:29 - Computing centiles for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:29 - Computing centiles for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:31 - Computing centiles for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:33 - Harmonizing data on 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:33 - Harmonizing data for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:34 - Harmonizing data for response_var_1.
+    
 
-    Process: 2984 - 2026-09-25 17:57:08 - Task ID created: fit_predict_fit_data__2026-09-25_17:57:08_99.257324
-
-    Process: 2984 - 2026-09-25 17:57:08 - Temporary directory created:
-
-    	/home/runner/.pcntoolkit/temp/fit_predict_fit_data__2026-09-25_17:57:08_99.257324
-
-    Process: 2984 - 2026-09-25 17:57:08 - Log directory created:
-
-    	/home/runner/.pcntoolkit/logs/fit_predict_fit_data__2026-09-25_17:57:08_99.257324
-
-    Process: 2984 - 2026-09-25 17:57:08 - Fitting models on 2 response variables.
-
-    Process: 2984 - 2026-09-25 17:57:08 - Fitting model for response_var_0.
+.. code:: text
 
     NUTS[nutpie]: [slope_mu, mu_intercept_mu, batch_effect_0_sigma_intercept_mu, normalized_batch_effect_0_offset_intercept_mu, batch_effect_1_sigma_intercept_mu, normalized_batch_effect_1_offset_intercept_mu, slope_sigma, intercept_sigma]
-
-    [?25l                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [90m━━━━[0m [90m━━━━━━━━[0m   0       0       0.000   0       0.00 draws/s   0:00…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [36m╸[0m[90m━━━[0m [90m━━━━━━━━[0m   83      0       0.193   63      0.00 draws/s   0:00…   -:--…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [36m━[0m[36m╸[0m[90m━━[0m [90m━━━━━━━━[0m   210     0       0.209   31      0.00 draws/s   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [36m━━[0m[36m╸[0m[90m━[0m [90m━━━━━━━━[0m   312     0       0.293   15      1053.96 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [36m━━━━[0m [90m━━━━━━━━[0m   39      0       0.292   15      1075.80 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m╸[0m[90m━━━━━━━[0m   155     2       0.300   15      1089.80 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━[0m[31m╸[0m[90m━━━━━━[0m   264     3       0.280   15      1089.84 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━[0m[31m╸[0m[90m━━━━━[0m   376     8       0.300   15      1096.34 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━[0m[31m╸[0m[90m━━━━[0m   488     20      0.295   15      1098.97 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━[0m[31m╸[0m[90m━━━[0m   606     23      0.264   15      1107.08 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━[0m[31m╸[0m[90m━━[0m   726     30      0.268   15      1116.55 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━[0m[31m╸[0m[90m━[0m   844     38      0.289   15      1122.79 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━[0m[31m╸[0m   965     42      0.254   15      1129.51 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [36m╸[0m[90m━━━[0m [90m━━━━━━━━[0m   72      0       0.223   31      0.00 draws/s   0:00…   -:--…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [36m━[0m[90m╺[0m[90m━━[0m [90m━━━━━━━━[0m   168     0       0.237   15      0.00 draws/s   0:00…   -:--…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [36m━━[0m[90m╺[0m[90m━[0m [90m━━━━━━━━[0m   274     0       0.295   15      992.68 draw…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [36m━━━[0m[90m╺[0m [90m━━━━━━━━[0m   395     0       0.275   31      1058.93 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [90m━━━━━━━━[0m   20      2       0.309   7       1099.32 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m╸[0m[90m━━━━━━━[0m   143     5       0.314   15      1122.12 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━[0m[31m╸[0m[90m━━━━━━[0m   268     7       0.312   15      1141.12 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━[0m[31m╸[0m[90m━━━━━[0m   389     10      0.324   7       1151.52 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━[0m[31m╸[0m[90m━━━━[0m   516     11      0.314   15      1167.79 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━[0m[31m╸[0m[90m━━━[0m   632     13      0.338   15      1166.99 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━[0m[31m╸[0m[90m━━[0m   752     19      0.320   31      1170.08 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [90m━━━━[0m [90m━━━━━━━━[0m   0       0       0.000   0       0.00 draws/s   0:00…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [36m╸[0m[90m━━━[0m [90m━━━━━━━━[0m   97      0       0.369   7       0.00 draws/s   0:00…   -:--…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [36m━[0m[36m╸[0m[90m━━[0m [90m━━━━━━━━[0m   194     0       0.485   7       0.00 draws/s   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [36m━━[0m[36m╸[0m[90m━[0m [90m━━━━━━━━[0m   315     0       0.315   15      1039.54 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [36m━━━[0m[36m╸[0m [90m━━━━━━━━[0m   436     0       0.324   7       1081.84 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [36m━━━━[0m [90m━━━━━━━━[0m   57      0       0.293   15      1111.73 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m╸[0m[90m━━━━━━━[0m   175     1       0.346   15      1123.09 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━[0m[31m╸[0m[90m━━━━━━[0m   300     1       0.295   15      1142.83 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━[0m[90m╺[0m[90m━━━━[0m   425     2       0.320   15      1156.22 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━[0m[31m╸[0m[90m━━━━[0m   527     3       0.322   47      1142.30 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━[0m[31m╸[0m[90m━━━[0m   648     3       0.294   15      1151.43 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━[0m[31m╸[0m[90m━━[0m   766     4       0.303   15      1152.99 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━[0m[90m╺[0m   891     4       0.349   15      1162.05 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    4       0.325   7       1162.05 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    4       0.325   7       1162.05 dra…   0:00…   0:00…  
-
-      [90m━━━━[0m [90m━━━━━━━━[0m   14      0       0.470   7       0.00 draws/s   0:00…   -:--…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    4       0.325   7       1162.05 dra…   0:00…   0:00…  
-
-      [36m╸[0m[90m━━━[0m [90m━━━━━━━━[0m   99      0       0.312   15      0.00 draws/s   0:00…   -:--…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    4       0.325   7       1162.05 dra…   0:00…   0:00…  
-
-      [36m━━[0m[90m╺[0m[90m━[0m [90m━━━━━━━━[0m   234     0       0.267   15      0.00 draws/s   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    4       0.325   7       1162.05 dra…   0:00…   0:00…  
-
-      [36m━━━[0m[90m╺[0m [90m━━━━━━━━[0m   353     0       0.222   31      1138.64 dra…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    4       0.325   7       1162.05 dra…   0:00…   0:00…  
-
-      [36m━━━━[0m [90m━━━━━━━━[0m   485     0       0.261   15      1185.77 dra…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    4       0.325   7       1162.05 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [90m╺[0m[90m━━━━━━━[0m   121     14      0.321   15      1222.40 dra…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    4       0.325   7       1162.05 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━[0m[31m╸[0m[90m━━━━━[0m   386     32      0.347   7       1249.59 dra…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    4       0.325   7       1162.05 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━[0m[31m╸[0m[90m━━━━[0m   517     36      0.363   7       1258.63 dra…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    4       0.325   7       1162.05 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━[0m[31m╸[0m[90m━━━[0m   648     41      0.326   15      1264.29 dra…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    4       0.325   7       1162.05 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━[0m[90m╺[0m[90m━[0m   789     52      0.341   15      1280.01 dra…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    4       0.325   7       1162.05 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━[0m[90m╺[0m   919     58      0.343   15      1282.97 dra…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    4       0.325   7       1162.05 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    67      0.338   7       1282.97 dra…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    43      0.264   15      1129.51 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    27      0.366   7       1177.21 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    4       0.325   7       1162.05 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    67      0.338   7       1282.97 dra…   0:00…   0:00…  
-
-                                                                                    
-
-    [?25hProcess: 2984 - 2026-09-25 17:57:27 - Fitting model for response_var_1.
-
     NUTS[nutpie]: [slope_mu, mu_intercept_mu, batch_effect_0_sigma_intercept_mu, normalized_batch_effect_0_offset_intercept_mu, batch_effect_1_sigma_intercept_mu, normalized_batch_effect_1_offset_intercept_mu, slope_sigma, intercept_sigma]
-
-    [?25l                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [90m━━━━[0m [90m━━━━━━━━[0m   0       0       0.000   0       0.00 draws/s   0:00…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [36m╸[0m[90m━━━[0m [90m━━━━━━━━[0m   81      0       0.479   15      0.00 draws/s   0:00…   -:--…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [36m━[0m[36m╸[0m[90m━━[0m [90m━━━━━━━━[0m   202     0       0.254   15      0.00 draws/s   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [36m━━[0m[36m╸[0m[90m━[0m [90m━━━━━━━━[0m   298     0       0.232   3       1006.69 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [36m━━━━[0m [90m━━━━━━━━[0m   34      0       0.323   31      1072.24 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m╸[0m[90m━━━━━━━[0m   155     9       0.303   15      1097.11 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━[0m[31m╸[0m[90m━━━━━━[0m   288     19      0.312   15      1132.15 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━[0m[31m╸[0m[90m━━━━━[0m   415     24      0.313   15      1149.45 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━[0m[31m╸[0m[90m━━━━[0m   529     24      0.327   31      1150.98 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━[0m[31m╸[0m[90m━━━[0m   651     28      0.307   15      1157.91 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━[0m[90m╺[0m[90m━[0m   770     34      0.294   15      1161.91 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━[0m[90m╺[0m   893     35      0.284   15      1167.62 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [90m━━━━[0m [90m━━━━━━━━[0m   5       0       1.020   15      0.00 draws/s   0:00…   -:--…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [36m━[0m[90m╺[0m[90m━━[0m [90m━━━━━━━━[0m   123     0       0.407   15      0.00 draws/s   0:00…   -:--…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [36m━━[0m[90m╺[0m[90m━[0m [90m━━━━━━━━[0m   249     0       0.375   15      0.00 draws/s   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [36m━━━[0m[90m╺[0m [90m━━━━━━━━[0m   391     0       0.164   15      1269.41 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [90m━━━━━━━━[0m   11      1       0.333   7       1246.28 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m╸[0m[90m━━━━━━━[0m   150     2       0.334   3       1279.48 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━[0m[31m╸[0m[90m━━━━━━[0m   283     9       0.349   15      1289.91 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━[0m[31m╸[0m[90m━━━━━[0m   408     10      0.365   31      1284.26 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━[0m[31m╸[0m[90m━━━━[0m   536     14      0.314   15      1286.92 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━[0m[31m╸[0m[90m━━[0m   735     81      0.361   9       1363.09 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━[0m[90m╺[0m   915     118     0.340   15      1407.92 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [90m━━━━[0m [90m━━━━━━━━[0m   16      0       0.114   1       0.00 draws/s   0:00…   -:--…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [36m━[0m[90m╺[0m[90m━━[0m [90m━━━━━━━━[0m   134     0       0.448   15      0.00 draws/s   0:00…   -:--…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [36m━━[0m[90m╺[0m[90m━[0m [90m━━━━━━━━[0m   256     0       0.156   15      0.00 draws/s   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [36m━━━━[0m [90m━━━━━━━━[0m   3       0       0.321   15      1148.34 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [90m╺[0m[90m━━━━━━━[0m   119     5       0.296   15      1152.66 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━[0m[31m╸[0m[90m━━━━━━[0m   267     32      0.284   15      1204.04 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━[0m[31m╸[0m[90m━━━━━[0m   404     40      0.322   5       1228.21 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━[0m[31m╸[0m[90m━━━━[0m   523     44      0.326   15      1225.12 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━[0m[31m╸[0m[90m━━━[0m   642     49      0.323   15      1221.36 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━[0m[31m╸[0m[90m━━[0m   767     52      0.314   15      1225.31 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━[0m[90m╺[0m   890     58      0.312   15      1226.81 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    62      0.305   15      1226.81 dra…   0:00…   0:00…  
-
-      [90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m[90m━[0m   0       0       0.000   0       0.00 draws/s   -:--…          
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    62      0.305   15      1226.81 dra…   0:00…   0:00…  
-
-      [90m━━━━[0m [90m━━━━━━━━[0m   9       0       0.258   63      0.00 draws/s   0:00…   -:--…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    62      0.305   15      1226.81 dra…   0:00…   0:00…  
-
-      [90m━━━━[0m [90m━━━━━━━━[0m   31      0       0.126   7       0.00 draws/s   0:00…   -:--…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    62      0.305   15      1226.81 dra…   0:00…   0:00…  
-
-      [36m━[0m[90m╺[0m[90m━━[0m [90m━━━━━━━━[0m   155     0       0.209   7       0.00 draws/s   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    62      0.305   15      1226.81 dra…   0:00…   0:00…  
-
-      [36m━━[0m[90m╺[0m[90m━[0m [90m━━━━━━━━[0m   288     0       0.442   23      917.14 draw…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    62      0.305   15      1226.81 dra…   0:00…   0:00…  
-
-      [36m━━━[0m[36m╸[0m [90m━━━━━━━━[0m   418     0       0.297   15      1012.06 dra…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    62      0.305   15      1226.81 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [90m━━━━━━━━[0m   51      3       0.329   15      1076.13 dra…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    62      0.305   15      1226.81 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m╸[0m[90m━━━━━━━[0m   190     11      0.322   3       1127.41 dra…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    62      0.305   15      1226.81 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━[0m[90m╺[0m[90m━━━━━[0m   325     20      0.346   15      1161.94 dra…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    62      0.305   15      1226.81 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━[0m[90m╺[0m[90m━━━━[0m   455     25      0.359   15      1180.44 dra…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    62      0.305   15      1226.81 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━[0m[90m╺[0m[90m━━━[0m   588     39      0.321   9       1196.89 dra…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    62      0.305   15      1226.81 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━[0m[31m╸[0m[90m━━[0m   719     47      0.349   7       1209.30 dra…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    62      0.305   15      1226.81 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━[0m[31m╸[0m[90m━[0m   840     47      0.305   15      1209.36 dra…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    62      0.305   15      1226.81 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    48      0.302   15      1212.07 dra…   0:00…   0:00…  
-
-    [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K                                                                                
-
-     [1m               [0m [1m       [0m [1m       [0m [1m [0m[1mStep [0m[1m [0m [1m [0m[1mGrad [0m[1m [0m [1m              [0m [1m       [0m [1m       [0m 
-
-     [1m [0m[1mProgress     [0m[1m [0m [1m [0m[1mDraw [0m[1m [0m [1m [0m[1mDive…[0m[1m [0m [1m [0m[1msize [0m[1m [0m [1m [0m[1mevals[0m[1m [0m [1m [0m[1mSpeed       [0m[1m [0m [1m [0m[1mElap…[0m[1m [0m [1m [0m[1mRema…[0m[1m [0m 
-
-     ────────────────────────────────────────────────────────────────────────────── 
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    41      0.316   15      1167.62 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    120     0.378   31      1407.92 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    62      0.305   15      1226.81 dra…   0:00…   0:00…  
-
-      [31m━━━━[0m [31m━━━━━━━━[0m   1000    48      0.302   15      1212.07 dra…   0:00…   0:00…  
-
-                                                                                    
-
-    [?25hProcess: 2984 - 2026-09-25 17:57:38 - Saving model to:
-
-    	resources/cli_example/hbr/save_dir.
-
-    Process: 2984 - 2026-09-25 17:57:38 - Making predictions on 2 response variables.
-
-    Process: 2984 - 2026-09-25 17:57:38 - Computing z-scores for 2 response variables.
-
-    Process: 2984 - 2026-09-25 17:57:38 - Computing z-scores for response_var_0.
-
     Sampling: []
-
-    Process: 2984 - 2026-09-25 17:57:39 - Computing z-scores for response_var_1.
-
     Sampling: []
-
-    Process: 2984 - 2026-09-25 17:57:39 - Computing centiles for 2 response variables.
-
-    Process: 2984 - 2026-09-25 17:57:39 - Computing centiles for response_var_0.
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
-    Process: 2984 - 2026-09-25 17:57:41 - Computing centiles for response_var_1.
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
-    Process: 2984 - 2026-09-25 17:57:43 - Computing log-probabilities for 2 response variables.
-
-    Process: 2984 - 2026-09-25 17:57:43 - Computing log-probabilities for 2 response variables.
-
-    Process: 2984 - 2026-09-25 17:57:43 - Computing log-probabilities for response_var_0.
-
-    Process: 2984 - 2026-09-25 17:57:45 - Computing log-probabilities for response_var_1.
-
-    Process: 2984 - 2026-09-25 17:57:45 - Computing yhat for 2 response variables.
-
     Sampling: []
-
     Sampling: []
-
-    Process: 2984 - 2026-09-25 17:57:46 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 2984 - 2026-09-25 17:57:46 - Computing centiles for 2 response variables.
-
-    Process: 2984 - 2026-09-25 17:57:46 - Computing centiles for response_var_0.
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
-    Process: 2984 - 2026-09-25 17:57:48 - Computing centiles for response_var_1.
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
-    Process: 2984 - 2026-09-25 17:57:49 - Harmonizing data on 2 response variables.
-
-    Process: 2984 - 2026-09-25 17:57:49 - Harmonizing data for response_var_0.
-
     Sampling: []
-
     Sampling: []
-
-    Process: 2984 - 2026-09-25 17:57:50 - Harmonizing data for response_var_1.
-
     Sampling: []
-
     Sampling: []
-
-    Process: 2984 - 2026-09-25 17:57:51 - Making predictions on 2 response variables.
-
-    Process: 2984 - 2026-09-25 17:57:51 - Computing z-scores for 2 response variables.
-
-    Process: 2984 - 2026-09-25 17:57:51 - Computing z-scores for response_var_0.
-
     Sampling: []
-
-    Process: 2984 - 2026-09-25 17:57:52 - Computing z-scores for response_var_1.
-
     Sampling: []
-
-    Process: 2984 - 2026-09-25 17:57:52 - Computing centiles for 2 response variables.
-
-    Process: 2984 - 2026-09-25 17:57:52 - Computing centiles for response_var_0.
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
-    Process: 2984 - 2026-09-25 17:57:54 - Computing centiles for response_var_1.
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
-    Process: 2984 - 2026-09-25 17:57:55 - Computing log-probabilities for 2 response variables.
-
-    Process: 2984 - 2026-09-25 17:57:55 - Computing log-probabilities for 2 response variables.
-
-    Process: 2984 - 2026-09-25 17:57:55 - Computing log-probabilities for response_var_0.
-
-    Process: 2984 - 2026-09-25 17:57:56 - Computing log-probabilities for response_var_1.
-
-    Process: 2984 - 2026-09-25 17:57:56 - Computing yhat for 2 response variables.
-
     Sampling: []
-
     Sampling: []
-
-    Process: 2984 - 2026-09-25 17:57:57 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 2984 - 2026-09-25 17:57:57 - Computing centiles for 2 response variables.
-
-    Process: 2984 - 2026-09-25 17:57:57 - Computing centiles for response_var_0.
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
-    Process: 2984 - 2026-09-25 17:57:59 - Computing centiles for response_var_1.
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
-    Process: 2984 - 2026-09-25 17:58:00 - Harmonizing data on 2 response variables.
-
-    Process: 2984 - 2026-09-25 17:58:00 - Harmonizing data for response_var_0.
-
     Sampling: []
-
     Sampling: []
-
-    Process: 2984 - 2026-09-25 17:58:01 - Harmonizing data for response_var_1.
-
     Sampling: []
-
     Sampling: []
-
-
-
+    
