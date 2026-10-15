@@ -8,6 +8,7 @@ import warnings
 import numpy as np
 import pytest
 import xarray as xr
+from scipy.stats import norm
 
 from pcntoolkit.math_functions.velocity import (
     _resolve_reference_batch_effects,
@@ -75,8 +76,7 @@ def test_compute_thrivelines_output_structure():
         R,
         timepoint_diff=1,
         anchor_step=1,
-        z_anchor_start=0,
-        z_anchor_end=1,
+        centiles=[0.5],
     )
 
     assert thrive_Z.dims == ("segment", "response_vars", "offset")
@@ -93,12 +93,13 @@ def test_compute_thrivelines_propagates_with_known_correlation():
         R,
         timepoint_diff=1,
         anchor_step=1,
-        z_anchor_start=1,
-        z_anchor_end=2,
+        centiles=[norm.cdf(1.0)],
         covariate_range=(0, 1),
     )
 
-    mask = (thrive_Z.coords["start_age"] == 0) & (thrive_Z.coords["start_z"] == 1)
+    mask = (thrive_Z.coords["start_age"] == 0) & np.isclose(
+        thrive_Z.coords["start_z"], 1.0
+    )
     seg_idx = int(np.where(mask)[0][0])
     seg = thrive_Z.isel(segment=seg_idx).sel(response_vars="metric_a", drop=True)
     expected_next = 1.0 * 0.8 + math.sqrt(1.0 - 0.8**2) * (-1.96)
@@ -110,16 +111,17 @@ def test_compute_thrivelines_propagates_with_known_correlation():
     assert list(x_seg.values) == [0, 1]
 
 
-def test_compute_thrivelines_uses_explicit_z_anchors():
+def test_compute_thrivelines_starts_at_given_centiles():
     R = _make_correlation_matrix(max_age=2, offset_correlations={1: 0.8})
-    z_anchors = np.array([-1.0, 0.5])
     thrive_Z, _ = compute_thrivelines(
         R,
-        z_anchors=z_anchors,
+        centiles=[0.05, 0.5],
         covariate_range=(0, 1),
     )
 
-    assert set(np.round(thrive_Z.coords["start_z"].values, 1)) == {-1.0, 0.5}
+    np.testing.assert_allclose(
+        np.unique(thrive_Z.coords["start_z"].values), norm.ppf([0.05, 0.5])
+    )
 
 
 def test_compute_thrivelines_zero_correlation_warns_and_omits_segments():
@@ -129,8 +131,7 @@ def test_compute_thrivelines_zero_correlation_warns_and_omits_segments():
         thrive_Z, _ = compute_thrivelines(
             R,
             timepoint_diff=1,
-            z_anchor_start=0,
-            z_anchor_end=1,
+            centiles=[0.5],
             covariate_range=(0, 2),
         )
 
@@ -145,8 +146,7 @@ def test_compute_thrivelines_respects_covariate_range():
     thrive_Z, thrive_X = compute_thrivelines(
         R,
         covariate_range=(1, 2),
-        z_anchor_start=0,
-        z_anchor_end=1,
+        centiles=[0.5],
     )
 
     assert set(thrive_Z.coords["start_age"].values) <= {1, 2}
@@ -188,7 +188,7 @@ def test_thrivelines_to_dataframe_long_format():
     R = _make_correlation_matrix(max_age=2, offset_correlations={1: 0.8})
     thrive_Z, thrive_X = compute_thrivelines(
         R,
-        z_anchors=[0.0, 1.0],
+        centiles=[0.5, 0.84],
         covariate_range=(0, 1),
     )
     thrive_Y = thrive_Z.copy()
