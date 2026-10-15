@@ -1,5 +1,5 @@
-Longitudinal normative modelling
-================================
+Getting started with longitudinal normative modelling
+=====================================================
 
 .. container:: notebook-download
 
@@ -329,7 +329,7 @@ visits per subject.
    Fig. 1: z-diff score
 
 Kudos to Barbora Rehák Bučková for making this fugure (`Rehák Bučková et
-al., 2025 <https://doi.org/10.7554/eLife.95823>`__).\*
+al., 2025 <https://doi.org/10.7554/eLife.95823>`__).
 
 z-gain
 ~~~~~~
