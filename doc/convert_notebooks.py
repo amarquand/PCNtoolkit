@@ -194,6 +194,24 @@ def fix_output_blocks() -> None:
                 fh.write(fixed)
 
 
+def fix_static_image_paths() -> None:
+    """Point notebook images in doc/_static/ to the right place on the website.
+
+    Notebooks in examples/ reach the images as ``../doc/_static/``, but the
+    generated RST files live in doc/tutorials/, where the same folder is
+    ``../_static/``.
+    """
+    for rst_path in glob.glob(os.path.join(TUTORIALS_DIR, "*.rst")):
+        with open(rst_path, "r", encoding="utf-8") as fh:
+            content = fh.read()
+
+        fixed = content.replace("../doc/_static/", "../_static/")
+
+        if fixed != content:
+            with open(rst_path, "w", encoding="utf-8") as fh:
+                fh.write(fixed)
+
+
 def fix_image_paths() -> None:
     """Fix image paths in generated RST files in Windows."""
     # Iterate over every generated RST file in the tutorials dir
@@ -217,5 +235,6 @@ if __name__ == "__main__":
     write_stripped_notebooks()
     insert_download_link()
     fix_output_blocks()  # fix the light yellow output boxes
+    fix_static_image_paths()
     if os.name == "nt":  # Only fix image paths on Windows
         fix_image_paths()
