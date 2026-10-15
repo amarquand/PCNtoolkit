@@ -48,10 +48,9 @@ class ZDiffScore(LongitudinalScore):
         self,
         normative_model: NormativeModel,
         reference_data: NormData,
-        subject_id_col: str,  # TODO: Are these subject_id_col necessary as a keyword argument? Does the user need to specify that?
-    ):
+    ) -> None:
         # Reuse the shared setup from the base class.
-        super().__init__(normative_model, reference_data, subject_id_col)
+        super().__init__(normative_model, reference_data)
         # Unlike ZGainScore, this score reads the reference cohort at scoring
         # time to estimate the spread of expected change.
         if reference_data is None:
@@ -65,11 +64,7 @@ class ZDiffScore(LongitudinalScore):
         # Hold the most recent z-diff scores; filled in by score().
         self.zdiff: xr.DataArray | None = None
 
-    def score(
-        self,
-        score_data: NormData,
-        subject_id_col: str | None = None,
-    ) -> xr.DataArray:
+    def score(self, score_data: NormData) -> xr.DataArray:
         """Compute the z-diff score for every subject in ``score_data``.
 
         Parameters
@@ -78,9 +73,6 @@ class ZDiffScore(LongitudinalScore):
             Longitudinal cohort with exactly two visits per subject, numeric
             visit labels on the NormData object, and predictions already
             computed.
-        subject_id_col : str, optional
-            Subject id column name override. Defaults to the value supplied
-            at construction.
 
         Returns
         -------
@@ -88,9 +80,6 @@ class ZDiffScore(LongitudinalScore):
             One z-diff score per subject and response variable. The same array
             is also stored on the instance as :attr:`zdiff` for later retrieval.
         """
-        # Use the stored subject id name unless the caller overrides it.
-        subject_id_col = subject_id_col or self.subject_id_col
-
         # Run checks first for both the reference and score data.
         self._check_is_predicted(self.reference_data)
         self._check_is_longitudinal(self.reference_data)

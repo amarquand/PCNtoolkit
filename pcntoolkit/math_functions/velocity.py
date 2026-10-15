@@ -15,11 +15,16 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pandas as pd
 import xarray as xr
+from scipy.stats import norm
 from sklearn.linear_model import LinearRegression
 
 if TYPE_CHECKING:
     from pcntoolkit.dataio.norm_data import NormData
     from pcntoolkit.normative_model import NormativeModel
+
+# Same default centiles as NormativeModel.compute_centiles, so thrivelines
+# start on the centile curves that are plotted by default.
+DEFAULT_THRIVELINE_CENTILES = [0.05, 0.25, 0.5, 0.75, 0.95]
 
 # ------------------------------------------------------------------- #
 # Correlation matrix
@@ -329,9 +334,7 @@ def compute_thrivelines(
         [xr.DataArray, xr.DataArray | float, float], xr.DataArray
     ] = propagate_thriveline_z,
     anchor_step: int = 1,
-    z_anchor_start: int = -3,
-    z_anchor_end: int = 4,
-    z_anchors: list[float] | np.ndarray | None = None,
+    centiles: list[float] | np.ndarray | None = None,
     covariate_range: tuple[int, int] | None = None,
 ) -> tuple[xr.DataArray, xr.DataArray]:
     """Build a grid of thriveline segments from a longitudinal correlation matrix.
@@ -365,12 +368,11 @@ def compute_thrivelines(
         propagators may be supplied to extend the toolbox.
     anchor_step : int, default 1
         Spacing between starting covariate anchors on the overlay grid.
-    z_anchor_start, z_anchor_end : int, default -3 and 4
-        Half-open range ``[z_anchor_start, z_anchor_end)`` of integer starting
-        z-scores used when ``z_anchors`` is not provided.
-    z_anchors : array-like of float, optional
-        Explicit starting z-scores (e.g. ``norm.ppf(centiles)``). When given,
-        ``z_anchor_start`` and ``z_anchor_end`` are ignored.
+    centiles : array-like of float, optional
+        Centiles (between 0 and 1) where thrivelines start. Defaults to
+        ``[0.05, 0.25, 0.5, 0.75, 0.95]``, the same centiles that
+        :func:`~pcntoolkit.util.plotter.plot_thrivelines` draws by default, so
+        every thriveline starts on a plotted centile curve.
     covariate_range : tuple of int, optional
         ``(min, max)`` covariate bounds used to slice ``R`` and place grid
         anchors. When omitted, anchors span the covariate coordinates in ``R``.
@@ -382,10 +384,25 @@ def compute_thrivelines(
         ``(segment, response_vars, offset)``. Each segment is one anchor pair
         propagated over ``timepoint_diff``; segments with missing or zero
         correlations are left as NaN and trigger a :class:`UserWarning`.
+
+    Raises
+    ------
+    ValueError
+        If ``timepoint_diff`` is not positive, or if a centile is not strictly
+        between 0 and 1.
     """
     # Reject non-positive covariate steps because propagation needs a forward hop.
     if timepoint_diff <= 0:
         raise ValueError("timepoint_diff must be > 0.")
+
+    if centiles is None:
+        centiles = DEFAULT_THRIVELINE_CENTILES
+    centiles = np.asarray(centiles, dtype=float)
+    # The 0th and 100th centiles map to infinite z-scores.
+    if np.any((centiles <= 0) | (centiles >= 1)):
+        raise ValueError(
+            f"centiles must be strictly between 0 and 1, got {centiles.tolist()}."
+        )
 
     # Ensure R carries a response_vars dimension and collect its labels.
     R, response_vars = _response_vars_from_R(R)
@@ -409,9 +426,7 @@ def compute_thrivelines(
         min_covariate,
         end_covariate,
         anchor_step,
-        z_anchor_start,
-        z_anchor_end,
-        z_anchors=z_anchors,
+        norm.ppf(centiles),
     )
 
     # Drop anchors whose forward step would fall outside the correlation matrix.
@@ -872,18 +887,11 @@ def _grid_anchors(
     start_covariate: int,
     end_covariate: int,
     anchor_step: int,
-    z_anchor_start: int,
-    z_anchor_end: int,
-    z_anchors: list[float] | np.ndarray | None = None,
+    z_values: np.ndarray,
 ) -> tuple[xr.DataArray, xr.DataArray]:
     """Build a Cartesian grid of covariate and z-score anchor points."""
     # Place covariate anchors from start up to (but not including) end_covariate.
     covariate_anchors = np.arange(start_covariate, end_covariate, anchor_step)
-    # Use explicit z anchors when provided, otherwise an integer z-score range.
-    if z_anchors is not None:
-        z_values = np.asarray(z_anchors, dtype=float)
-    else:
-        z_values = np.arange(z_anchor_start, z_anchor_end)
     # Form every (covariate, z-score) pair on the overlay grid.
     age_grid, z_grid = np.meshgrid(covariate_anchors, z_values, indexing="ij")
     # Assign a flat segment index to each grid cell.

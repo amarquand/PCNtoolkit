@@ -21,7 +21,7 @@ Generate simulated data
     
     rng = np.random.default_rng(42)
     
-    n = 2000 # Small sample size to run notebook fast
+    n = 2000  # Small sample size to run notebook fast
     
     # Age varies in months from 108 to 132 (roughly 9 to 11 years old)
     age_months = rng.integers(108, 133, size=n)
@@ -45,12 +45,14 @@ Let’s simulate ``mu``, ``psi`` and ``alpha``:
 
     # NB mean (mu): linear in age, sex and site on the log scale.
     eta_mu = 1.2 + 0.35 * age_z + 0.25 * (sex == "F") + 0.08 * site_z
-    mu = np.clip(np.exp(eta_mu), 0.1, 16.0) # exp() makes the mean positive
+    mu = np.clip(np.exp(eta_mu), 0.1, 16.0)  # exp() makes the mean positive
     
     # NB mixing weight (psi) on the logit scale.
     eta_psi = 1.0 - 0.2 * age_z - 0.1 * (sex == "F") - 0.10 * (site_id == 0)
     # inverse logit -> probability
-    psi = np.clip(1 / (1 + np.exp(-eta_psi)), 0.70, 0.98) # structural zeros are (1 - psi), so here roughly 2-30% of the sample.
+    psi = np.clip(
+        1 / (1 + np.exp(-eta_psi)), 0.70, 0.98
+    )  # structural zeros are (1 - psi), so here roughly 2-30% of the sample.
     
     # NB shape parameter (alpha)
     alpha = 2.5
@@ -62,34 +64,40 @@ Let’s simulate ``mu``, ``psi`` and ``alpha``:
     ).astype(int)
     
     # One row per subject. mu, psi and alpha are the ground truth we can compare the fit against.
-    df = pd.DataFrame({
-        "age": age_months,
-        "sex": sex,
-        "site": site,
-        "age_z": age_z,
-        "mu": mu,
-        "psi": psi,          
-        "alpha": alpha,     
-        "y": y,
-    })
+    df = pd.DataFrame(
+        {
+            "age": age_months,
+            "sex": sex,
+            "site": site,
+            "age_z": age_z,
+            "mu": mu,
+            "psi": psi,
+            "alpha": alpha,
+            "y": y,
+        }
+    )
     
     # Sanity checks on the simulated data
-    summary = pd.Series({
-        "n": n,
-        "age_mean": age_months.mean(),
-        "sex_male_prop": (sex == "M").mean(),
-        "mean_mu": mu.mean(),
-        "mean_psi": psi.mean(),
-        # the fraction who were never in the running for a non-zero count (eg healthy subjects)
-        "structural_zero_rate": (1 - psi).mean(),
-        # the fraction of people who scored 0 (eg the healthy ones above, PLUS patients 
-        # who happened to score 0 this time)
-        "zero_rate": (y == 0).mean(),
-        "mean_y": y.mean(),
-        "expected_mean_psi_mu": (psi * mu).mean(), # theoretical ZINB mean, should be close to mean_y
-        "var_y": y.var(), # much larger than mean_y: a Poisson would not fit these data
-        "max_y": y.max(),
-    })
+    summary = pd.Series(
+        {
+            "n": n,
+            "age_mean": age_months.mean(),
+            "sex_male_prop": (sex == "M").mean(),
+            "mean_mu": mu.mean(),
+            "mean_psi": psi.mean(),
+            # the fraction who were never in the running for a non-zero count (eg healthy subjects)
+            "structural_zero_rate": (1 - psi).mean(),
+            # the fraction of people who scored 0 (eg the healthy ones above, PLUS patients
+            # who happened to score 0 this time)
+            "zero_rate": (y == 0).mean(),
+            "mean_y": y.mean(),
+            "expected_mean_psi_mu": (
+                psi * mu
+            ).mean(),  # theoretical ZINB mean, should be close to mean_y
+            "var_y": y.var(),  # much larger than mean_y: a Poisson would not fit these data
+            "max_y": y.max(),
+        }
+    )
     summary
 
 
@@ -132,7 +140,13 @@ Plot simulated data
     ax.set_xlabel("Count outcome")
     ax.set_ylabel("Frequency")
     ax.set_xlim(0, np.quantile(df["y"], 0.99))
-    ax.axvline(df["y"].mean(), color="crimson", linestyle="--", linewidth=2, label=f"Mean = {df['y'].mean():.2f}")
+    ax.axvline(
+        df["y"].mean(),
+        color="crimson",
+        linestyle="--",
+        linewidth=2,
+        label=f"Mean = {df['y'].mean():.2f}",
+    )
     ax.legend()
     plt.tight_layout()
     plt.show()
@@ -147,29 +161,23 @@ Set up PCNtoolkit
 
 .. code:: ipython3
 
-    import warnings
     import logging
+    import warnings
     
-    
-    import pandas as pd
     import matplotlib.pyplot as plt
+    import numpy as np
+    import pandas as pd
+    import seaborn as sns
+    
+    import pcntoolkit.util.output
     from pcntoolkit import (
         HBR,
-        BsplineBasisFunction,
         NormativeModel,
         NormData,
-        load_fcon1000,
-        NormalLikelihood,
         ZeroInflatedNegativeBinomialLikelihood,
         make_prior,
         plot_centiles_advanced,
-        plot_qq,
-        plot_ridge,
     )
-    
-    import numpy as np
-    import pcntoolkit.util.output
-    import seaborn as sns
     
     sns.set_style("darkgrid")
     
@@ -188,8 +196,6 @@ Build and visualise NormData
 
 .. code:: ipython3
 
-    from sklearn.model_selection import train_test_split
-    from pcntoolkit import NormData
     
     covariate_cols = ["age"]
     batch_effects = ["sex", "site"]
@@ -253,7 +259,6 @@ Build and visualise NormData
     print(norm_data.batch_effects)
 
 
-
 .. code:: text
 
           age sex    site     age_z        mu       psi  alpha  y
@@ -270,13 +275,13 @@ Build and visualise NormData
     1999  115   F   site3 -0.691448  3.064127  0.738520    2.5  0
     
     [2000 rows x 8 columns]
-
+    
 
 .. code:: text
 
     /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/dataio/norm_data.py:427: UserWarning: No grouping was set for outlier removal, so thresholds are computed across all rows and site differences are ignored. Consider remove_outliers_group_by=['site'] (if available) or your site column.
       dataframe = cls.remove_outliers(
-
+    
 
 .. code:: text
 
@@ -291,7 +296,7 @@ Build and visualise NormData
     Coordinates:
       * observations       (observations) int64 16kB 0 1 2 3 ... 1995 1996 1997 1998
       * batch_effect_dims  (batch_effect_dims) <U4 32B 'sex' 'site'
-
+    
 
 
 .. image:: 15_HBR_ZINB_files/15_HBR_ZINB_10_3.png
@@ -311,18 +316,18 @@ plus the softplus mapping in the HBR modelled ``mu`` is flexible enough.
         linear=True,
         slope=make_prior(dist_name="Normal", dist_params=(0.0, 5.0)),
         intercept=make_prior(
-            random=True, # random effects on the intercept for site and sex
+            random=True,  # random effects on the intercept for site and sex
             mu=make_prior(dist_name="Normal", dist_params=(0.0, 1.0)),
             sigma=make_prior(dist_name="Gamma", dist_params=(1.0, 1.0)),
         ),
-        mapping="softplus",          # mu must be positive
+        mapping="softplus",  # mu must be positive
     )
     
     alpha = make_prior(
         linear=True,
         slope=make_prior(dist_name="Normal", dist_params=(0.0, 1.0)),
         intercept=make_prior(dist_name="Normal", dist_params=(1.0, 1.0)),
-        mapping="softplus",          # alpha must be positive
+        mapping="softplus",  # alpha must be positive
         mapping_params=(0.0, 2.0),
     )
     
@@ -330,22 +335,21 @@ plus the softplus mapping in the HBR modelled ``mu`` is flexible enough.
         linear=True,
         slope=make_prior(dist_name="Normal", dist_params=(0, 1)),
         intercept=make_prior(dist_name="Normal", dist_params=(0, 1)),
-        mapping="sigmoid",           # psi is a probability, must be in (0, 1)
+        mapping="sigmoid",  # psi is a probability, must be in (0, 1)
     )
     
     likelihood = ZeroInflatedNegativeBinomialLikelihood(mu, alpha, psi)
     
     template_hbr = HBR(
-        name="template", 
-        cores=4, 
+        name="template",
+        cores=4,
         progressbar=True,
-        draws=1500, 
-        tune=500, 
+        draws=1500,
+        tune=500,
         chains=4,
-        nuts_sampler="nutpie", 
+        nuts_sampler="nutpie",
         likelihood=likelihood,
     )
-
 
 .. code:: ipython3
 
@@ -355,9 +359,9 @@ plus the softplus mapping in the HBR modelled ``mu`` is flexible enough.
         evaluate_model=False,
         saveresults=False,
         saveplots=False,
-        # inscaler scales X (age), not Y. Age is a continuous covariate, so standardizing it is harmless 
+        # inscaler scales X (age), not Y. Age is a continuous covariate, so standardizing it is harmless
         inscaler="standardize",
-        # outscaler scales Y. We must not apply the scaling here as 
+        # outscaler scales Y. We must not apply the scaling here as
         # ZINB models counts, so Y must be non-negative and integer.
         outscaler="none",
     )
@@ -375,7 +379,7 @@ plus the softplus mapping in the HBR modelled ``mu`` is flexible enough.
 .. raw:: html
 
     <pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
-
+    
 
 
 
@@ -1328,11 +1332,17 @@ Plot centiles
 
     plot_centiles_advanced(
         model,
-        centiles=[0.25, 0.4, 0.5, 0.75, 0.95],  # the default centiles are[0.05, 0.25, 0.5, 0.75, 0.95]
-        scatter_data=train,  
+        centiles=[
+            0.25,
+            0.4,
+            0.5,
+            0.75,
+            0.95,
+        ],  # the default centiles are[0.05, 0.25, 0.5, 0.75, 0.95]
+        scatter_data=train,
         batch_effects={"site": ["site10"], "sex": ["M"]},
         show_other_data=True,
-        harmonize_data=True, 
+        harmonize_data=True,
     )
 
 

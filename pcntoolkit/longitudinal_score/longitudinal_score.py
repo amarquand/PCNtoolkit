@@ -28,29 +28,21 @@ class LongitudinalScore(ABC):
         Longitudinal reference cohort, usually healthy controls, used to learn
         how much change is typical. Only needed by scores that estimate
         something from a cohort at scoring time, such as ``ZDiffScore``.
-    subject_id_col : str, optional
-        Name of the subject identifier column used when the data was built.
     """
 
     def __init__(
         self,
         normative_model: NormativeModel,
         reference_data: NormData | None = None,
-        subject_id_col: str | None = None,
-    ):
+    ) -> None:
         self.normative_model = normative_model
         self.reference_data = reference_data
-        self.subject_id_col = subject_id_col
 
         # Fail early if the user passed an unfitted model.
         normative_model.check_is_fitted()
 
     @abstractmethod
-    def score(
-        self,
-        score_data: NormData,
-        subject_id_col: str | None = None,
-    ) -> xr.DataArray:
+    def score(self, score_data: NormData) -> xr.DataArray:
         """Score subjects in ``score_data``.
 
         Parameters
@@ -58,9 +50,6 @@ class LongitudinalScore(ABC):
         score_data : NormData
             Longitudinal cohort to score. Must include numeric visit labels
             via ``NormData.from_dataframe(..., visits='<column>')``.
-        subject_id_col : str, optional
-            Subject id column name override. Defaults to the value supplied
-            at construction.
 
         Returns
         -------
