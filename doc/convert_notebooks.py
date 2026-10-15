@@ -19,9 +19,7 @@ NOTEBOOKS_DIR = os.path.join(TUTORIALS_DIR, "notebooks")
 
 # Notebooks that are not ready for the website. Names are without the
 # ".ipynb" extension.
-SKIP_NOTEBOOKS = {
-    "14_longitudinal_modelling",
-}
+SKIP_NOTEBOOKS: set[str] = set()
 
 os.makedirs(TUTORIALS_DIR, exist_ok=True)
 
