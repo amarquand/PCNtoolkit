@@ -74,6 +74,10 @@ class MigrationRegistry:
     _migrations : dict[ComponentName, list[tuple[Version, Callable]]]
         Maps component name -> sorted list of
         (introduced_in_version, migration_fn) tuples.
+    _warned_versions : set[tuple[str, str]]
+        (saved_version, current_version) pairs that have already been warned
+        about, so the migration warning is emitted once per saved version
+        instead of once per migration, component and response variable.
     """
 
     def __init__(self) -> None:
@@ -82,6 +86,12 @@ class MigrationRegistry:
         self._migrations: dict[
             ComponentName, list[tuple[Version, Callable[[dict], dict]]]
         ] = {}
+        # Saved/current version pairs already warned about. Loading one
+        # model calls migrate() once per migration, per component and per
+        # response variable, so without this the same warning repeats
+        # hundreds of times. Tests use fresh registries, which keeps this
+        # state isolated between them.
+        self._warned_versions: set[tuple[str, str]] = set()
 
     def register(
         self,
@@ -172,12 +182,21 @@ class MigrationRegistry:
         # Apply migrations in ascending version order.
         for introduced_in, fn in self._migrations[component]:
             if saved_version < introduced_in:
-                # Emit an informational message that migration is running.
-                Output.warning(
-                    Warnings.MODEL_MIGRATION_APPLIED,
-                    saved_version=str(saved_version),
-                    current_version=current_version,
-                )
+                # Emit an informational message that migration is running,
+                # but only for the first component seen at this saved
+                # version. The migration itself still runs every time; only
+                # the warning is deduplicated. A set is used rather than
+                # relying on Python's warning filters, because Output
+                # prefixes each message with a timestamp and pid, which
+                # would otherwise make every message look unique.
+                warn_key = (str(saved_version), current_version)
+                if warn_key not in self._warned_versions:
+                    self._warned_versions.add(warn_key)
+                    Output.warning(
+                        Warnings.MODEL_MIGRATION_APPLIED,
+                        saved_version=str(saved_version),
+                        current_version=current_version,
+                    )
                 d = fn(d)
 
         return d
