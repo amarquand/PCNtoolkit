@@ -116,6 +116,32 @@ class HBR(RegressionModel):
         self.vi_loss: np.ndarray | None = None
         self.pymc_model: pm.Model = None  # type: ignore
         self.be_maps: dict = None  # type:ignore
+        # Fit-time unconstrained PyMC parameter dimensions, also saved with
+        # the model because a loaded model does not have a compiled graph.
+        self._parameter_dimensions: dict[str, int] | None = None
+
+    def parameter_dimensions(self) -> dict[str, int]:
+        """Return dimensions of the fitted PyMC model's free variables.
+
+        Count the scalar entries of the model's initial point (the sampling
+        space), not the posterior arrays: PyMC transforms account for
+        constraints such as K-level zero-sum offsets having K-1 degrees of
+        freedom. Deterministics, observations, chains and draws are excluded.
+        """
+        if not self.is_fitted:
+            raise ValueError("Parameter counts require a fitted HBR model")
+        if self._parameter_dimensions is None:
+            if self.pymc_model is None:
+                raise ValueError(
+                    "Parameter dimensions are unavailable for this saved HBR "
+                    "model; a compiled model is required"
+                )
+            self._parameter_dimensions = {
+                name: int(np.size(value))
+                for name, value in self.pymc_model.initial_point().items()
+            }
+        return dict(self._parameter_dimensions)
+
 
     def fit(
         self,
@@ -144,6 +170,10 @@ class HBR(RegressionModel):
         """
         self.be_maps = copy.deepcopy(be_maps)
         self.pymc_model: pm.Model = self.likelihood.compile(X, be, self.be_maps, Y)
+        self._parameter_dimensions = {
+            name: int(np.size(value))
+            for name, value in self.pymc_model.initial_point().items()
+        }
         with self.pymc_model:
             self.idata = self._run_inference()
         self.is_fitted = True
@@ -484,6 +514,10 @@ class HBR(RegressionModel):
             new_hbr_model.idata = new_hbr_model._run_inference(**inference_overrides)
             new_hbr_model.is_fitted = True
         new_hbr_model.pymc_model = new_hbr_model_model
+        new_hbr_model._parameter_dimensions = {
+            name: int(np.size(value))
+            for name, value in new_hbr_model_model.initial_point().items()
+        }
         new_hbr_model.be_maps = be_maps
         return new_hbr_model
 
@@ -596,6 +630,7 @@ class HBR(RegressionModel):
         if is_fitted and (path is not None):
             idata_path = os.path.join(path, "idata.nc")
             self.load_idata(idata_path)
+        self._parameter_dimensions = my_dict.get("_parameter_dimensions")
         self.be_maps = my_dict["be_maps"]
         return self
 

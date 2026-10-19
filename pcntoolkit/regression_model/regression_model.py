@@ -167,6 +167,21 @@ class RegressionModel(ABC):
         """
         pass
 
+    def parameter_dimensions(self) -> dict[str, int]:
+        """Return structural fitted parameter dimensions by component.
+
+        Explicit constraints are accounted for where possible, but the count
+        need not equal the identifiable or effective degrees of freedom, nor
+        the parameter penalty required by a model-selection criterion.
+        """
+        raise NotImplementedError(
+            f"Parameter dimensions are not implemented for {type(self).__name__}"
+        )
+
+    def n_parameters(self) -> int:
+        """Return the total structural fitted parameter dimension."""
+        return sum(self.parameter_dimensions().values())
+
     def model_specific_evaluation(self, path: str) -> None:
         """
         Save model-specific evaluation metrics.
