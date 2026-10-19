@@ -57,6 +57,12 @@ def compute_correlation_matrix(
     xr.DataArray
         Correlations of shape ``[n_response_vars, n_ages, n_ages]`` with dims
         ``(response_vars, f"{covariate_name}_1", f"{covariate_name}_2")``.
+
+    Raises
+    ------
+    ValueError
+        If the data is cross-sectional, or if no pair of ages within
+        ``bandwidth`` has at least 4 subjects scanned at both ages.
     """
     # Flatten the xarray dataset into one table per observation.
     df = data.to_dataframe()[["X", "Z", "batch_effects", "subject_ids"]].droplevel(
@@ -90,6 +96,8 @@ def compute_correlation_matrix(
     # Start from the identity (a subject is perfectly correlated with itself).
     cors = np.tile(np.eye(max_age + 1), (n_responsevars, 1, 1))
 
+    # Count the age pairs with enough subjects to estimate a correlation.
+    n_estimated = 0
     # Visit all age pairs that fall within the requested bandwidth.
     for age1, age2 in offset_indices(max_age, bandwidth):
         # Match the same subjects observed at both ages.
@@ -101,6 +109,7 @@ def compute_correlation_matrix(
         )
         # Only estimate a correlation when enough paired subjects exist.
         if len(merged) >= 4:
+            n_estimated += 1
             # Compute one correlation per response variable.
             for i, rv in enumerate(response_vars):
                 cors[i, age2, age1] = cors[i, age1, age2] = merged[f"{rv}_x"].corr(
@@ -109,6 +118,15 @@ def compute_correlation_matrix(
         # Mark sparse age pairs as missing so regression can fill them.
         elif age1 != age2:
             cors[:, age2, age1] = cors[:, age1, age2] = np.nan
+
+    # Without a single estimated correlation, the regression below has
+    # nothing to learn from.
+    if n_estimated == 0:
+        raise ValueError(
+            "Cannot compute correlation matrix: no pair of ages has at least "
+            "4 subjects scanned at both ages. Use more longitudinal subjects, "
+            "or load a precomputed matrix with CorrelationMatrix.load()."
+        )
 
     # Fill sparse off-diagonal entries using the regression model.
     newcors = fill_missing(bandwidth, cors)
