@@ -390,7 +390,7 @@ def test_saved_scores_match_returned_scores(
 
     saved = pd.read_csv(save_path, index_col=0)
     # Compare contents only: ignore column order, index/column names, and the
-    # text dtype of subject ids (read_csv may use pandas' "string" dtype).
+    # text dtype of subject ids.
     pd.testing.assert_frame_equal(
         saved,
         scores.to_pandas(),

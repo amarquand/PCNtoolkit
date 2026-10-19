@@ -333,11 +333,8 @@ def test_zgain_get_thrivelines_saved_csv_matches_returned_dataframe(
     )
 
     saved = pd.read_csv(save_path)
-    # Compare contents only: ignore column order, and int-vs-float differences
-    # that come from reading numbers back from text.
-    pd.testing.assert_frame_equal(
-        saved, thrivelines, check_like=True, check_dtype=False
-    )
+    # Compare contents only: ignore column order
+    pd.testing.assert_frame_equal(saved, thrivelines, check_like=True)
 
 
 def test_plot_thrivelines_returns_figures(
