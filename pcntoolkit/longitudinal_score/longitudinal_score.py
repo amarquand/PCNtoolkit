@@ -71,14 +71,7 @@ class LongitudinalScore(ABC):
         scores: xr.DataArray,
         save_path: str | PathLike[str],
     ) -> None:
-        """Write subject-level scores as a wide CSV table.
-        
-        The output looks like:
-        subjects,lh_thickness,rh_thickness
-        sub-01,0.42,-1.10
-        sub-02,-0.35,0.87
-        sub-03,2.13,1.95
-        """
+        """Write subject-level scores as a wide CSV (one row per subject)."""
         path = Path(save_path)
         path.parent.mkdir(parents=True, exist_ok=True)
         # Convert a DataArray to a wide-format DataFrame.
@@ -91,7 +84,7 @@ class LongitudinalScore(ABC):
         frame: pd.DataFrame,
         save_path: str | PathLike[str],
     ) -> None:
-        """Write a DataFrame to CSV. Used for saving thriveline dataframes."""
+        """Write a DataFrame to CSV. Currently used for saving thrivelines."""
         path = Path(save_path)
         path.parent.mkdir(parents=True, exist_ok=True)
         # Save as csv

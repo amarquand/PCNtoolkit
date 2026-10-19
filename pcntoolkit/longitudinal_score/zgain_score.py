@@ -126,7 +126,14 @@ class ZGainScore(LongitudinalScore):
             matrix and place grid anchors. When omitted, anchors span the
             covariate coordinates in the stored correlation matrix.
         save_path : str | PathLike[str] | None, optional
-            If set, write the thriveline table to this CSV path.
+            If set, write the thriveline table to this CSV path, one row per
+            point on a thriveline. Opened as a table, it looks like::
+
+                segment  start_age  start_z  response_var  offset   X       Z     Y
+                0        20         0.0      lh_thickness  0       20   0.000  2.71
+                0        20         0.0      lh_thickness  1       21  -1.176  2.62
+
+            Read it back with ``pd.read_csv``.
 
         Returns
         -------
@@ -180,8 +187,14 @@ class ZGainScore(LongitudinalScore):
             numeric visit labels on the NormData object, and z-scores already
             computed.
         save_path : str | PathLike[str] | None, optional
-            If set, write scores to this CSV path in wide format: one row per
-            subject and one column per response variable.
+            If set, write scores to this CSV path, one row per subject and
+            one column per response variable. Opened as a table, it looks
+            like::
+
+                subjects  lh_thickness  rh_thickness
+                sub-01            0.42         -1.10
+                sub-02           -0.35          0.87
+                sub-03            2.13          1.95
 
         Returns
         -------

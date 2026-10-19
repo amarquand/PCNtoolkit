@@ -78,8 +78,14 @@ class ZDiffScore(LongitudinalScore):
             visit labels on the NormData object, and predictions already
             computed.
         save_path : str | PathLike[str] | None, optional
-            If set, write scores to this CSV path in wide format: one row per
-            subject and one column per response variable.
+            If set, write scores to this CSV path, one row per subject and
+            one column per response variable. Opened as a table, it looks
+            like::
+
+                subjects  lh_thickness  rh_thickness
+                sub-01            0.42         -1.10
+                sub-02           -0.35          0.87
+                sub-03            2.13          1.95
 
         Returns
         -------
