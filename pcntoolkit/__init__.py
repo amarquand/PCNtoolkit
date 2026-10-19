@@ -6,12 +6,7 @@ from .dataio.data_factory import (
     load_lnm,
 )
 from .dataio.norm_data import NormData
-from .longitudinal import (
-    CorrelationMatrix,
-    LongitudinalScore,
-    VelocityModel,
-    ZDiffScore,
-)
+from .longitudinal import CorrelationMatrix, VelocityModel, ZDiffScore
 from .math_functions.basis_function import (
     BsplineBasisFunction,
     CompositeBasisFunction,
@@ -64,7 +59,6 @@ __all__ = [
     "Runner",
     "plot_centiles_advanced",
     "plot_thrivelines",
-    "LongitudinalScore",
     "ZDiffScore",
     "VelocityModel",
 ]
