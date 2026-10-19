@@ -365,7 +365,7 @@ def fetch_example_correlation_matrix(save_path: str | None = None) -> str:
     -------
     str
         Path to the CSV, named ``<response_var>.csv`` as
-        :meth:`CorrelationMatrix.load` expects.
+        ``CorrelationMatrix.load`` expects.
     """
     if not save_path:
         save_path = os.path.join("pcntoolkit_resources", "data", "correlation_matrix")

@@ -39,9 +39,9 @@ class ZDiffScore(LongitudinalScore):
     Attributes
     ----------
     zdiff : xr.DataArray | None
-        The most recent z-diff scores produced by :meth:`score`. ``None`` until
-        :meth:`score` has been called at least once. It stores the same
-        ``xr.DataArray`` that :meth:`score` returns, so the result can be
+        The most recent z-diff scores produced by ``score``. ``None`` until
+        ``score`` has been called at least once. It stores the same
+        ``xr.DataArray`` that ``score`` returns, so the result can be
         retrieved later even if the return value was not saved.
     """
 
@@ -91,7 +91,7 @@ class ZDiffScore(LongitudinalScore):
         -------
         xr.DataArray
             One z-diff score per subject and response variable. The same array
-            is also stored on the instance as :attr:`zdiff` for later retrieval.
+            is also stored on the instance as ``zdiff`` for later retrieval.
         """
         # Run checks first for both the reference and score data.
         self._check_is_predicted(self.reference_data)
