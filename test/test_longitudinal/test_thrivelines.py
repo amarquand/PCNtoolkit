@@ -320,6 +320,26 @@ def test_zgain_get_thrivelines_returns_dataframe(
     assert not thrivelines.empty
 
 
+def test_zgain_get_thrivelines_saved_csv_matches_returned_dataframe(
+    tmp_path, fitted_norm_blr_model, blr_correlation_matrix
+):
+    scorer = ZGainScore(fitted_norm_blr_model, blr_correlation_matrix)
+    save_path = tmp_path / "thrivelines.csv"
+
+    thrivelines = scorer.get_thrivelines(
+        centiles=[0.5, 0.84],
+        covariate_range=(0, 2),
+        save_path=save_path,
+    )
+
+    saved = pd.read_csv(save_path)
+    # Compare contents only: ignore column order, and int-vs-float differences
+    # that come from reading numbers back from text.
+    pd.testing.assert_frame_equal(
+        saved, thrivelines, check_like=True, check_dtype=False
+    )
+
+
 def test_plot_thrivelines_returns_figures(
     fitted_norm_blr_model,
     blr_correlation_matrix,

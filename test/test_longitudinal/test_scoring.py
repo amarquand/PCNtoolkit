@@ -359,3 +359,42 @@ def test_zdiff_requires_reference_at_init(
             fitted_norm_blr_model,
             None,  # type: ignore[arg-type]
         )
+
+
+# ------------------------------------------------------------------ #
+# Saving scores to CSV
+# ------------------------------------------------------------------ #
+
+
+@pytest.mark.parametrize("score_type", ["zgain", "zdiff"])
+def test_saved_scores_match_returned_scores(
+    score_type,
+    tmp_path,
+    fitted_norm_blr_model,
+    blr_correlation_matrix,
+    blr_predicted_longitudinal_norm_data,
+    blr_longitudinal_dataframe_factory,
+    blr_predicted_norm_data_factory,
+):
+    if score_type == "zgain":
+        scorer = ZGainScore(fitted_norm_blr_model, blr_correlation_matrix)
+    else:
+        scorer = ZDiffScore(fitted_norm_blr_model, blr_predicted_longitudinal_norm_data)
+    data = blr_predicted_norm_data_factory(
+        blr_longitudinal_dataframe_factory(),
+        z_values=np.array([[0.0], [1.0], [0.5], [-0.3]]),
+    )
+    save_path = tmp_path / f"{score_type}.csv"
+
+    scores = scorer.score(data, save_path=save_path)
+
+    saved = pd.read_csv(save_path, index_col=0)
+    # Compare contents only: ignore column order, index/column names, and the
+    # text dtype of subject ids (read_csv may use pandas' "string" dtype).
+    pd.testing.assert_frame_equal(
+        saved,
+        scores.to_pandas(),
+        check_like=True,
+        check_names=False,
+        check_index_type=False,
+    )
