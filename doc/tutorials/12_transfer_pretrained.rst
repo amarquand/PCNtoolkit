@@ -29,10 +29,15 @@ Install requests manually as it is not install with
 .. code:: text
 
     Requirement already satisfied: requests in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (2.34.2)
+
     Requirement already satisfied: charset_normalizer<4,>=2 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from requests) (3.5.1)
+
     Requirement already satisfied: idna<4,>=2.5 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from requests) (3.20)
+
     Requirement already satisfied: urllib3<3,>=1.26 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from requests) (2.8.0)
+
     Requirement already satisfied: certifi>=2023.5.7 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from requests) (2026.7.22)
+
 
 
 .. code:: ipython3
@@ -43,7 +48,6 @@ Install requests manually as it is not install with
     import zipfile
     from urllib.parse import unquote
     
-    import matplotlib.pyplot as plt
     import pandas as pd
     import requests
     import seaborn as sns
@@ -102,42 +106,35 @@ first ask the server which ones are available.
     HBR_Sb_sa_DES_lifespan_37K_66sites.zip
     BLRw_ct_DES_lifespan_67K_89sites.zip
     HBR_Sb_sa_lifespan_DK_46K_59sites.zip
-
+    
 
 The file names tell you what each model contains:
 
-+-----------------------------------+-----------------------------------+
-| Part of the name                  | Meaning                           |
-+===================================+===================================+
-| ``BLRw``                          | Bayesian Linear Regression with a |
-|                                   | warp (`Fraza et al.,              |
-|                                   | 2021 <https://doi.org/10.1        |
-|                                   | 016/j.neuroimage.2021.118715>`__) |
-+-----------------------------------+-----------------------------------+
-| ``HBR_Sb``                        | Hierarchical Bayesian Regression  |
-|                                   | with a SHASH likelihood (`de Boer |
-|                                   | et al.,                           |
-|                                   | 2024 <https://                    |
-|                                   | doi.org/10.1162/imag_a_00110>`__) |
-+-----------------------------------+-----------------------------------+
-| ``ct`` / ``sa`` / ``sc``          | cortical thickness / surface area |
-|                                   | / subcortical volumes (sMRI)      |
-+-----------------------------------+-----------------------------------+
-| ``fa``                            | fractional anisotropy (dMRI)      |
-+-----------------------------------+-----------------------------------+
-| ``fc``                            | functional connectivity (fMRI)    |
-+-----------------------------------+-----------------------------------+
-| ``vox``                           | voxelwise normative models        |
-+-----------------------------------+-----------------------------------+
-| ``DK`` / ``DES``                  | Desikan-Killiany / Destrieux      |
-|                                   | parcellation                      |
-+-----------------------------------+-----------------------------------+
-| ``67K``, ``79K``, …               | number of subjects the model was  |
-|                                   | trained on                        |
-+-----------------------------------+-----------------------------------+
-| ``89sites``, ``100sites``, …      | number of sites the model was     |
-|                                   | trained on                        |
-+-----------------------------------+-----------------------------------+
++-----------------------------------+-------------------------------------------------------------+
+| Part of the name                  | Meaning                                                     |
++===================================+=============================================================+
+| ``BLRw``                          | Bayesian Linear Regression with a warp (`Fraza et al.,      |
+|                                   | 2021 <https://doi.org/10.1016/j.neuroimage.2021.118715>`__) |
++-----------------------------------+-------------------------------------------------------------+
+| ``HBR_Sb``                        | Hierarchical Bayesian Regression with a SHASH likelihood    |
+|                                   | (`de Boer et al.,                                           |
+|                                   | 2024 <https://doi.org/10.1162/imag_a_00110>`__)             |
++-----------------------------------+-------------------------------------------------------------+
+| ``ct`` / ``sa`` / ``sc``          | cortical thickness / surface area / subcortical volumes     |
+|                                   | (sMRI)                                                      |
++-----------------------------------+-------------------------------------------------------------+
+| ``fa``                            | fractional anisotropy (dMRI)                                |
++-----------------------------------+-------------------------------------------------------------+
+| ``fc``                            | functional connectivity (fMRI)                              |
++-----------------------------------+-------------------------------------------------------------+
+| ``vox``                           | voxelwise normative models                                  |
++-----------------------------------+-------------------------------------------------------------+
+| ``DK`` / ``DES``                  | Desikan-Killiany / Destrieux parcellation                   |
++-----------------------------------+-------------------------------------------------------------+
+| ``67K``, ``79K``, …               | number of subjects the model was trained on                 |
++-----------------------------------+-------------------------------------------------------------+
+| ``89sites``, ``100sites``, …      | number of sites the model was trained on                    |
++-----------------------------------+-------------------------------------------------------------+
 
 All our pretrained models are estimated on healthy subject only.
 
@@ -195,7 +192,7 @@ parcellation, trained on 67.000 subjects from 89 sites.
 
     Downloading BLRw_ct_DES_lifespan_67K_89sites ...
     Model available at /home/runner/work/PCNtoolkit/PCNtoolkit/resources/pretrained/BLRw_ct_DES_lifespan_67K_89sites
-
+    
 
 3. Load the model and see what it expects
 -----------------------------------------
@@ -234,7 +231,7 @@ models published earlier.
       warnings.warn(message, category)
     /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/output.py:309: UserWarning: Process: 3147 - 2026-09-25 18:00:43 - This model was saved with PCNtoolkit v1.1.2, but you are running v1.4.0. Loading this model in v1.4.0...
       warnings.warn(message, category)
-
+    
 
 .. code:: text
 
@@ -243,7 +240,7 @@ models published earlier.
       site: 89 levels, e.g. ['ABCD_01', 'ABCD_02', 'ABCD_03']
       sex: 2 levels, e.g. ['F', 'M']
     Response vars : 150
-
+    
 
 4. Prepare our own data
 -----------------------
@@ -268,7 +265,9 @@ b. **The batch effects must use the same encoding.** The BLR lifespan
     fcon.columns = [c[1] if isinstance(c, tuple) else c for c in fcon.columns]
     
     # The lifespan BLR models expect sex coded as F/M
-    if set(fcon["sex"].unique()) <= {0, 1}: # note that load_fcon1000() already converts sex to M/F, so this check is not strictly necessary
+    if (
+        set(fcon["sex"].unique()) <= {0, 1}
+    ):  # note that load_fcon1000() already converts sex to M/F, so this check is not strictly necessary
         fcon["sex"] = fcon["sex"].map({0: "F", 1: "M"})
     
     fcon["sub_id"] = fcon.index.astype(str)
@@ -287,7 +286,7 @@ b. **The batch effects must use the same encoding.** The BLR lifespan
     Shared with the pretrained model : 150
     Of which successfully fitted     : 150
     Skipped (not fitted)             : []
-
+    
 
 For this tutorial we transfer only one response variable to keep the
 output readable and fast. You can skip the next cell to transfer all of
@@ -342,7 +341,7 @@ to several sites together.
     Munchen               15
     Leiden_2180           12
     Pittsburgh             3
-
+    
 
 .. code:: ipython3
 
@@ -361,7 +360,7 @@ to several sites together.
     sex
     F    122
     M     76
-
+    
 
 We wrap the dataframe in a ``NormData`` object and split it in two:
 
@@ -397,7 +396,7 @@ set can be any size, down to a single patient.
 
     Adaptation set: 99 subjects
     Test set      : 99 subjects
-
+    
 
 5. Transfer
 -----------

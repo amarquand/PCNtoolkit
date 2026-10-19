@@ -15,12 +15,14 @@ Imports
 
 .. code:: ipython3
 
-    import warnings
     import logging
+    import warnings
     
-    
-    import pandas as pd
     import matplotlib.pyplot as plt
+    import pandas as pd
+    import seaborn as sns
+    
+    import pcntoolkit.util.output
     from pcntoolkit import (
         BLR,
         BsplineBasisFunction,
@@ -32,9 +34,6 @@ Imports
         plot_qq,
         plot_ridge,
     )
-    
-    import pcntoolkit.util.output
-    import seaborn as sns
     
     sns.set_style("darkgrid")
     
@@ -83,8 +82,8 @@ right amygdala, a deep brain structure.
 
 .. code:: text
 
-    Process: 2499 - 2026-09-25 17:46:28 - Removed 0 NANs
-    Process: 2499 - 2026-09-25 17:46:28 - Dataset "fcon1000" created.
+    Process: 3728 - 2026-09-28 16:47:24 - Removed 0 NANs
+    Process: 3728 - 2026-09-28 16:47:24 - Dataset "fcon1000" created.
         - 1078 observations
         - 1078 unique subjects
         - 1 covariates
@@ -93,7 +92,7 @@ right amygdala, a deep brain structure.
         	sex (2)
     	site (23)
         
-
+    
 
 .. code:: ipython3
 
@@ -102,7 +101,13 @@ right amygdala, a deep brain structure.
     df = train.to_dataframe()
     fig, ax = plt.subplots(1, 2, figsize=(15, 5))
     
-    sns.countplot(data=df, y=("batch_effects", "site"), hue=("batch_effects", "sex"), ax=ax[0], orient="h")
+    sns.countplot(
+        data=df,
+        y=("batch_effects", "site"),
+        hue=("batch_effects", "sex"),
+        ax=ax[0],
+        orient="h",
+    )
     ax[0].legend(title="Sex")
     ax[0].set_title("Count of sites")
     ax[0].set_xlabel("Site")
@@ -154,7 +159,7 @@ like site and sex.
         # We use a B-spline basis expansion for the mean, so the predicted mean is a smooth function of the covariates
         basis_function_mean=BsplineBasisFunction(degree=3, nknots=5),
         # We want the variance to be a function of the covariates
-        heteroskedastic=True
+        heteroskedastic=True,
     )
 
 After specifying the regression model, we can configure a normative
@@ -162,53 +167,51 @@ model.
 
 A normative model has a number of configuration options:
 
--  ``savemodel``: Whether to save the model after fitting. It creates a
-   JSON file containing your trained model parameters. This is useful
-   to:
+- ``savemodel``: Whether to save the model after fitting. It creates a
+  JSON file containing your trained model parameters. This is useful to:
 
-   -  *Avoid re-fitting*: Load the saved model later instead of training
-      from scratch every time.
-   -  *Share with collaborators*: Send the file to colleagues, who can
-      update it with their own data, producing a better model trained on
-      more data combined. We will cover this in the federated learning
-      tutorial.
+  - *Avoid re-fitting*: Load the saved model later instead of training
+    from scratch every time.
+  - *Share with collaborators*: Send the file to colleagues, who can
+    update it with their own data, producing a better model trained on
+    more data combined. We will cover this in the federated learning
+    tutorial.
 
--  ``evaluate_model``: Whether to evaluate the model after fitting. It
-   computes a set of metrics are computed that tell you how well your
-   model fits the data. For more information, see our evaluation metrics
-   tutorial.
+- ``evaluate_model``: Whether to evaluate the model after fitting. It
+  computes a set of metrics are computed that tell you how well your
+  model fits the data. For more information, see our evaluation metrics
+  tutorial.
 
--  ``saveresults``: Whether to save the per-subject results after
-   predicting. Results include:
+- ``saveresults``: Whether to save the per-subject results after
+  predicting. Results include:
 
-   -  how far the observed value for this subject is from the fitted
-      model’s predicted typical value for someone with similar
-      covariates and batch effects (``Z``)
-   -  how statistically surprising the observed value for this subject
-      is under the fitted model’s predicted distribution (``logp``).
-   -  fitted model’s predicted distribution at selected centiles (such
-      as the 5th, 50th, and 95th centiles) for this subject
-      (``centiles``)
-   -  summary of evaluation metrics for each response variable, when
-      ``evaluate_model`` is enabled.
+  - how far the observed value for this subject is from the fitted
+    model’s predicted typical value for someone with similar covariates
+    and batch effects (``Z``)
+  - how statistically surprising the observed value for this subject is
+    under the fitted model’s predicted distribution (``logp``).
+  - fitted model’s predicted distribution at selected centiles (such as
+    the 5th, 50th, and 95th centiles) for this subject (``centiles``)
+  - summary of evaluation metrics for each response variable, when
+    ``evaluate_model`` is enabled.
 
--  ``saveplots``: Whether to save the plots after fitting.
+- ``saveplots``: Whether to save the plots after fitting.
 
--  ``save_dir``: The directory to save the model, results, and plots.
+- ``save_dir``: The directory to save the model, results, and plots.
 
--  ``inscaler``: The scaler to use for the input data. Can be either one
-   of “standardize”, “minmax”, “robminmax”, “none”
+- ``inscaler``: The scaler to use for the input data. Can be either one
+  of “standardize”, “minmax”, “robminmax”, “none”
 
--  ``outscaler``: The scaler to use for the output data. Can be either
-   one of “standardize”, “minmax”, “robminmax”, “none”
+- ``outscaler``: The scaler to use for the output data. Can be either
+  one of “standardize”, “minmax”, “robminmax”, “none”
 
 .. code:: ipython3
 
     model_blr_no_be = NormativeModel(
-        template_regression_model=blr_no_be, # we select our BLR model
-        savemodel=False, # we dont need to save the model for this tutorial
-        evaluate_model=True, # we want to evaluate the model to see how well it fits the data
-        saveresults=False, # we don't need to save the results for this tutorial
+        template_regression_model=blr_no_be,  # we select our BLR model
+        savemodel=False,  # we dont need to save the model for this tutorial
+        evaluate_model=True,  # we want to evaluate the model to see how well it fits the data
+        saveresults=False,  # we don't need to save the results for this tutorial
         saveplots=False,
         save_dir="resources/blr/save_dir",
         inscaler="standardize",
@@ -234,29 +237,29 @@ All results can be found in the save directory.
 
 .. code:: text
 
-    Process: 2499 - 2026-09-25 17:46:29 - Fitting models on 1 response variables.
-    Process: 2499 - 2026-09-25 17:46:29 - Fitting model for Right-Amygdala.
-    Process: 2499 - 2026-09-25 17:46:29 - Making predictions on 1 response variables.
-    Process: 2499 - 2026-09-25 17:46:29 - Computing z-scores for 1 response variables.
-    Process: 2499 - 2026-09-25 17:46:29 - Computing z-scores for Right-Amygdala.
-    Process: 2499 - 2026-09-25 17:46:29 - Computing centiles for 1 response variables.
-    Process: 2499 - 2026-09-25 17:46:29 - Computing centiles for Right-Amygdala.
-    Process: 2499 - 2026-09-25 17:46:29 - Computing log-probabilities for 1 response variables.
-    Process: 2499 - 2026-09-25 17:46:29 - Computing log-probabilities for 1 response variables.
-    Process: 2499 - 2026-09-25 17:46:29 - Computing log-probabilities for Right-Amygdala.
-    Process: 2499 - 2026-09-25 17:46:29 - Computing yhat for 1 response variables.
-    Process: 2499 - 2026-09-25 17:46:29 - Computing yhat for Right-Amygdala.
-    Process: 2499 - 2026-09-25 17:46:30 - Making predictions on 1 response variables.
-    Process: 2499 - 2026-09-25 17:46:30 - Computing z-scores for 1 response variables.
-    Process: 2499 - 2026-09-25 17:46:30 - Computing z-scores for Right-Amygdala.
-    Process: 2499 - 2026-09-25 17:46:30 - Computing centiles for 1 response variables.
-    Process: 2499 - 2026-09-25 17:46:30 - Computing centiles for Right-Amygdala.
-    Process: 2499 - 2026-09-25 17:46:30 - Computing log-probabilities for 1 response variables.
-    Process: 2499 - 2026-09-25 17:46:30 - Computing log-probabilities for 1 response variables.
-    Process: 2499 - 2026-09-25 17:46:30 - Computing log-probabilities for Right-Amygdala.
-    Process: 2499 - 2026-09-25 17:46:30 - Computing yhat for 1 response variables.
-    Process: 2499 - 2026-09-25 17:46:30 - Computing yhat for Right-Amygdala.
-
+    Process: 3728 - 2026-09-28 16:47:25 - Fitting models on 1 response variables.
+    Process: 3728 - 2026-09-28 16:47:25 - Fitting model for Right-Amygdala.
+    Process: 3728 - 2026-09-28 16:47:25 - Making predictions on 1 response variables.
+    Process: 3728 - 2026-09-28 16:47:25 - Computing z-scores for 1 response variables.
+    Process: 3728 - 2026-09-28 16:47:25 - Computing z-scores for Right-Amygdala.
+    Process: 3728 - 2026-09-28 16:47:25 - Computing centiles for 1 response variables.
+    Process: 3728 - 2026-09-28 16:47:25 - Computing centiles for Right-Amygdala.
+    Process: 3728 - 2026-09-28 16:47:25 - Computing log-probabilities for 1 response variables.
+    Process: 3728 - 2026-09-28 16:47:25 - Computing log-probabilities for 1 response variables.
+    Process: 3728 - 2026-09-28 16:47:25 - Computing log-probabilities for Right-Amygdala.
+    Process: 3728 - 2026-09-28 16:47:25 - Computing yhat for 1 response variables.
+    Process: 3728 - 2026-09-28 16:47:25 - Computing yhat for Right-Amygdala.
+    Process: 3728 - 2026-09-28 16:47:26 - Making predictions on 1 response variables.
+    Process: 3728 - 2026-09-28 16:47:26 - Computing z-scores for 1 response variables.
+    Process: 3728 - 2026-09-28 16:47:26 - Computing z-scores for Right-Amygdala.
+    Process: 3728 - 2026-09-28 16:47:26 - Computing centiles for 1 response variables.
+    Process: 3728 - 2026-09-28 16:47:26 - Computing centiles for Right-Amygdala.
+    Process: 3728 - 2026-09-28 16:47:26 - Computing log-probabilities for 1 response variables.
+    Process: 3728 - 2026-09-28 16:47:26 - Computing log-probabilities for 1 response variables.
+    Process: 3728 - 2026-09-28 16:47:26 - Computing log-probabilities for Right-Amygdala.
+    Process: 3728 - 2026-09-28 16:47:26 - Computing yhat for 1 response variables.
+    Process: 3728 - 2026-09-28 16:47:26 - Computing yhat for Right-Amygdala.
+    
 
 Looking at the printed messages, we can identify three main steps:
 
@@ -286,7 +289,7 @@ Let’s start with the centiles plot:
 
 .. code:: text
 
-    Process: 2499 - 2026-09-25 17:46:30 - Dataset "centile" created.
+    Process: 3728 - 2026-09-28 16:47:26 - Dataset "centile" created.
         - 150 observations
         - 150 unique subjects
         - 1 covariates
@@ -295,11 +298,11 @@ Let’s start with the centiles plot:
         	sex (1)
     	site (1)
         
-    Process: 2499 - 2026-09-25 17:46:30 - Computing centiles for 1 response variables.
-    Process: 2499 - 2026-09-25 17:46:30 - Computing centiles for Right-Amygdala.
-    Process: 2499 - 2026-09-25 17:46:30 - Harmonizing data on 1 response variables.
-    Process: 2499 - 2026-09-25 17:46:30 - Harmonizing data for Right-Amygdala.
-
+    Process: 3728 - 2026-09-28 16:47:26 - Computing centiles for 1 response variables.
+    Process: 3728 - 2026-09-28 16:47:26 - Computing centiles for Right-Amygdala.
+    Process: 3728 - 2026-09-28 16:47:26 - Harmonizing data on 1 response variables.
+    Process: 3728 - 2026-09-28 16:47:26 - Harmonizing data for Right-Amygdala.
+    
 
 
 .. image:: 02_BLR_files/02_BLR_16_1.png
@@ -494,8 +497,8 @@ https://doi.org/10.1016/j.neuroimage.2021.118715
 
 .. code:: ipython3
 
-    # To reduce tutorial clutter, we suppress the internal "Process: ..." messages. 
-    # For your own analyses, we recommend keeping them enabled to better understand 
+    # To reduce tutorial clutter, we suppress the internal "Process: ..." messages.
+    # For your own analyses, we recommend keeping them enabled to better understand
     # what is happening and to help us troubleshoot any issues you report.
     pcntoolkit.util.output.Output.set_show_messages(False)
 
@@ -507,7 +510,6 @@ https://doi.org/10.1016/j.neuroimage.2021.118715
         basis_function_mean=BsplineBasisFunction(degree=3, nknots=5),
         # We want the variance to be a function of the covariates
         heteroskedastic=True,
-        
         # Allow warping
         warp_name="warpsinharcsinh",  # We configure a sinh-arcsinh warp
     )
@@ -515,10 +517,10 @@ https://doi.org/10.1016/j.neuroimage.2021.118715
 .. code:: ipython3
 
     model_wblr_no_be = NormativeModel(
-        template_regression_model=wblr_no_be, # we select our w-BLR model
-        savemodel=False, # we dont need to save the model for this tutorial
-        evaluate_model=True, # we want to evaluate the model to see how well it fits the data
-        saveresults=False, # we don't need to save the results for this tutorial
+        template_regression_model=wblr_no_be,  # we select our w-BLR model
+        savemodel=False,  # we dont need to save the model for this tutorial
+        evaluate_model=True,  # we want to evaluate the model to see how well it fits the data
+        saveresults=False,  # we don't need to save the results for this tutorial
         saveplots=False,
         save_dir="resources/blr/save_dir",
         inscaler="standardize",
@@ -538,11 +540,9 @@ Plot the results
 .. code:: ipython3
 
     # centile plots
-    plot_centiles(model_wblr_no_be, scatter_data=train);
-    
+    plot_centiles(model_wblr_no_be, scatter_data=train)
     # qq-plots
-    plot_qq(test, plot_id_line=True);
-    
+    plot_qq(test, plot_id_line=True)
     # Show the evaluation metrics from the train set
     display(train.get_statistics_df())
     # Show the evaluation metrics from the train set
@@ -722,23 +722,21 @@ mean and variance patterns.
         basis_function_mean=BsplineBasisFunction(degree=3, nknots=5),
         # We want the variance to be a function of the covariates
         heteroskedastic=True,
-        
         # Allow warping
         warp_name="warpsinharcsinh",  # We configure a sinh-arcsinh warp
-    
         # Model the batch effects (sex and site)
         fixed_effect=True,  # We model offsets in the mean for each individual batch effect
         fixed_effect_slope=True,  # We model a fixed effect in the slope of the mean for each individual batch effect
-        fixed_effect_var_slope=True, # We model a fixed effect in the slope of the variance for each individual batch effect
+        fixed_effect_var_slope=True,  # We model a fixed effect in the slope of the variance for each individual batch effect
     )
 
 .. code:: ipython3
 
     model_wblr_with_be = NormativeModel(
-        template_regression_model=wblr_with_be, # we select our w-BLR model
-        savemodel=False, # we dont need to save the model for this tutorial
-        evaluate_model=True, # we want to evaluate the model to see how well it fits the data
-        saveresults=False, # we don't need to save the results for this tutorial
+        template_regression_model=wblr_with_be,  # we select our w-BLR model
+        savemodel=False,  # we dont need to save the model for this tutorial
+        evaluate_model=True,  # we want to evaluate the model to see how well it fits the data
+        saveresults=False,  # we don't need to save the results for this tutorial
         saveplots=False,
         save_dir="resources/blr/save_dir",
         inscaler="standardize",
@@ -755,51 +753,65 @@ Fit the model
 
 .. code:: text
 
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 2.8749209772067033e-46.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.414812510892634e-39.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/output.py:309: UserWarning: Process: 2499 - 2026-09-25 17:46:51 - Posterior estimation failed: 
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\util\output.py:309: UserWarning: Process: 3728 - 2026-09-28 16:47:29 - Posterior estimation failed: 
     Matrix is not positive definite. 
     The optimizer could not find a stable solution. Retrying optimization.
       warnings.warn(message, category)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.176897254651122e-45.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.8022411211105214e-41.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 2.479209053968284e-41.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.945389378943095e-29.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.054848450876669e-29.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.702417629932035e-42.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 2.0212834563577796e-45.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.425645895571441e-39.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 2.874920977206761e-46.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.4147086929024445e-39.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.3823585293824684e-49.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.781386154239702e-29.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.885815344404344e-29.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.30319032537282e-35.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 2.874904057091889e-46.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.414795783989857e-39.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 2.874920977206631e-46.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.4148125108922026e-39.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 2.8748584273318678e-46.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.4147988142234866e-39.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 2.3264956440937163e-47.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.41484461362732e-39.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.135928938765907e-48.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.41486735969468e-39.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.021309304207873e-47.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.885815346386487e-29.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.3345842506116585e-41.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.414723724242765e-39.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 2.0234297283478483e-41.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.414758834765677e-39.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 2.342430573341322e-46.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 2.3590958672718655e-46.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 2.8749209772067045e-46.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 2.3231467814753657e-39.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 2.8752012455748466e-46.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.885815346189634e-29.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.1788065231769523e-45.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.885815333221019e-29.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.41480553666579e-39.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.4148184811929996e-39.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.414822703318959e-39.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.414823614876498e-39.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.4147818542711997e-39.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.414756896650734e-39.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\regression_model\blr.py:640: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.416133353373602e-39.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    
 
 Plot the results
 ~~~~~~~~~~~~~~~~
@@ -818,17 +830,20 @@ distribution of responses or Z-scores across batch effects.
     plot_centiles_advanced(
         model_wblr_with_be,
         scatter_data=train,
-    
         # Plot these centiles, the default is [0.05, 0.25, 0.5, 0.75, 0.95]
-        centiles=[0.05, 0.5, 0.95],  
-        
+        centiles=[0.05, 0.5, 0.95],
         # Highlight a specific gender from specific sites
-        batch_effects={"site": [ "Beijing_Zang", "AnnArbor_a",], "sex": ["M"]},
+        batch_effects={
+            "site": [
+                "Beijing_Zang",
+                "AnnArbor_a",
+            ],
+            "sex": ["M"],
+        },
         # Show other data not belonging to the groups above
         show_other_data=True,
-        
         # Harmonize the scatterdata, this means that we 'remove' the batch effects from the data, by simulating what the data would have looked like if all data was from the same batch.
-        harmonize_data=True
+        harmonize_data=True,
     );
 
 
@@ -849,8 +864,7 @@ the function call (see ``batch_effects`` keyword argument).
 .. code:: ipython3
 
     # qq-plot
-    plot_qq(test, plot_id_line=True);
-    
+    plot_qq(test, plot_id_line=True)
     # Show the evaluation metrics from the train set
     display(train.get_statistics_df())
     # Show the evaluation metrics from the train set
@@ -1030,27 +1044,26 @@ females):
 .. code:: ipython3
 
     # Show the ridge plot per sex
-    plot_ridge(test, "Z", split_by="sex");
-    
+    plot_ridge(test, "Z", split_by="sex")
     # We can also show the 'Y' variable
     plot_ridge(test, "Y", split_by="sex");
 
 
 .. code:: text
 
-    /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
+    c:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\seaborn\axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
-    /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
+    c:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\seaborn\axisgrid.py:123: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
-    /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
+    c:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\seaborn\axisgrid.py:123: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
-    /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
+    c:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\seaborn\axisgrid.py:123: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
-    /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
+    c:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\seaborn\axisgrid.py:123: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/plotter.py:1097: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\util\plotter.py:1097: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
       g.figure.tight_layout()
-
+    
 
 
 .. image:: 02_BLR_files/02_BLR_40_1.png
@@ -1058,19 +1071,19 @@ females):
 
 .. code:: text
 
-    /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
+    c:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\seaborn\axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
-    /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
+    c:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\seaborn\axisgrid.py:123: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
-    /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
+    c:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\seaborn\axisgrid.py:123: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
-    /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
+    c:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\seaborn\axisgrid.py:123: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
-    /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
+    c:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\seaborn\axisgrid.py:123: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/plotter.py:1097: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-feat-a\pcntoolkit\util\plotter.py:1097: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
       g.figure.tight_layout()
-
+    
 
 
 .. image:: 02_BLR_files/02_BLR_40_3.png
@@ -1090,14 +1103,13 @@ Compare the three models
     # Plot the centiles of each model to compare
     for model_name, m in models.items():
         print(model_name)
-        plot_centiles(m, scatter_data=train);
-
+        plot_centiles(m, scatter_data=train)
 
 
 .. code:: text
 
     BLR (no be)
-
+    
 
 
 .. image:: 02_BLR_files/02_BLR_42_1.png
@@ -1106,7 +1118,7 @@ Compare the three models
 .. code:: text
 
     w-BLR (no be)
-
+    
 
 
 .. image:: 02_BLR_files/02_BLR_42_3.png
@@ -1115,7 +1127,7 @@ Compare the three models
 .. code:: text
 
     w-BLR (with be)
-
+    
 
 
 .. image:: 02_BLR_files/02_BLR_42_5.png
@@ -1141,8 +1153,8 @@ What’s next?
 
 Now we have a normative BLR model, we can use it to:
 
--  Harmonize data
--  Synthesize new data
+- Harmonize data
+- Synthesize new data
 
 Harmonize
 ~~~~~~~~~
@@ -1171,8 +1183,20 @@ Let’s first harmonize to the Beijing_Zang which has subjects ages 18-26:
     plt.style.use("seaborn-v0_8")
     df = test.to_dataframe()
     fig, ax = plt.subplots(1, 2, figsize=(13, 5), sharey=True)
-    sns.scatterplot(data=df, x=("X", "age"), y=("Y", feature_to_plot), hue=("batch_effects", "site"), ax=ax[0])
-    sns.scatterplot(data=df, x=("X", "age"), y=("Y_harmonized", feature_to_plot), hue=("batch_effects", "site"), ax=ax[1])
+    sns.scatterplot(
+        data=df,
+        x=("X", "age"),
+        y=("Y", feature_to_plot),
+        hue=("batch_effects", "site"),
+        ax=ax[0],
+    )
+    sns.scatterplot(
+        data=df,
+        x=("X", "age"),
+        y=("Y_harmonized", feature_to_plot),
+        hue=("batch_effects", "site"),
+        ax=ax[1],
+    )
     ax[0].title.set_text("Unharmonized")
     ax[1].title.set_text("Harmonized to Beijing_Zang (ages 18-26)")
     ax[0].legend([], [])
@@ -1209,8 +1233,20 @@ same data again, this time to ``ICBM``, which covers the full age range
     plt.style.use("seaborn-v0_8")
     df = test.to_dataframe()
     fig, ax = plt.subplots(1, 2, figsize=(13, 5), sharey=True)
-    sns.scatterplot(data=df, x=("X", "age"), y=("Y", feature_to_plot), hue=("batch_effects", "site"), ax=ax[0])
-    sns.scatterplot(data=df, x=("X", "age"), y=("Y_harmonized", feature_to_plot), hue=("batch_effects", "site"), ax=ax[1])
+    sns.scatterplot(
+        data=df,
+        x=("X", "age"),
+        y=("Y", feature_to_plot),
+        hue=("batch_effects", "site"),
+        ax=ax[0],
+    )
+    sns.scatterplot(
+        data=df,
+        x=("X", "age"),
+        y=("Y_harmonized", feature_to_plot),
+        hue=("batch_effects", "site"),
+        ax=ax[1],
+    )
     ax[0].title.set_text("Unharmonized")
     ax[1].title.set_text("Harmonized to ICBM (ages 19-85)")
     ax[0].legend([], [])
@@ -1264,7 +1300,9 @@ site B.
 .. code:: ipython3
 
     # Generate 10000 synthetic datapoints from scratch
-    synthetic_data = model_wblr_with_be.synthesize(covariate_range_per_batch_effect=True, n_samples=10000)  # <- also easy
+    synthetic_data = model_wblr_with_be.synthesize(
+        covariate_range_per_batch_effect=True, n_samples=10000
+    )  # <- also easy
     plot_centiles_advanced(
         model_wblr_with_be,
         covariate="age",  # Which covariate to plot on the x-axis
@@ -1288,7 +1326,9 @@ site B.
     if hasattr(new_test_data, "Y"):
         del new_test_data["Y"]
     
-    synthetic = model_wblr_with_be.synthesize(new_test_data)  # <- will fill in the missing Y data
+    synthetic = model_wblr_with_be.synthesize(
+        new_test_data
+    )  # <- will fill in the missing Y data
     plot_centiles_advanced(
         model_wblr_with_be,
         centiles=[0.05, 0.5, 0.95],  # Plot arbitrary centiles
