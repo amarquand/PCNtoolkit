@@ -52,7 +52,7 @@ class ZDiffScore(LongitudinalScore):
     ) -> None:
         # Reuse the shared setup from the base class.
         super().__init__(normative_model, reference_data)
-        # Unlike ZGainScore, this score reads the reference cohort at scoring
+        # Unlike VelocityModel, this score reads the reference cohort at scoring
         # time to estimate the spread of expected change.
         if reference_data is None:
             raise ValueError(
@@ -235,7 +235,7 @@ class ZDiffScore(LongitudinalScore):
             # Tell the user to switch to z-gain for longer trajectories.
             raise ValueError(
                 "ZDiffScore supports at most two visits per subject. "
-                "Some subjects have more than two visits. You can use ZGainScore "
+                "Some subjects have more than two visits. You can use VelocityModel "
                 "for three or more visits."
             )
 
@@ -247,5 +247,5 @@ class ZDiffScore(LongitudinalScore):
         if not isinstance(template, BLR):
             # Explain that z-diff is only defined for BLR models here.
             raise ValueError(
-                "ZDiffScore requires a BLR (or warped BLR) normative model. Use ZGainScore for other regression models."
+                "ZDiffScore requires a BLR (or warped BLR) normative model. Use VelocityModel for other regression models."
             )

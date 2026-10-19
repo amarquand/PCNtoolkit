@@ -1,4 +1,4 @@
-"""Tests for ZGainScore and ZDiffScore."""
+"""Tests for VelocityModel and ZDiffScore."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ import pandas as pd
 import pytest
 
 from pcntoolkit.dataio.norm_data import NormData
+from pcntoolkit.longitudinal_score.velocity_model import VelocityModel
 from pcntoolkit.longitudinal_score.zdiff_score import ZDiffScore
-from pcntoolkit.longitudinal_score.zgain_score import ZGainScore
 from pcntoolkit.math_functions.correlation_matrix import CorrelationMatrix
 from test.test_longitudinal.conftest import (
     expected_zgain,
@@ -16,7 +16,7 @@ from test.test_longitudinal.conftest import (
 )
 
 # ------------------------------------------------------------------ #
-# ZGainScore — formula and edge cases
+# VelocityModel — formula and edge cases
 # ------------------------------------------------------------------ #
 
 
@@ -27,7 +27,7 @@ def zgain_setup(
     blr_longitudinal_dataframe_factory,
     blr_predicted_norm_data_factory,
 ):
-    """Return a builder for a ZGainScore scorer and matching predicted NormData."""
+    """Return a builder for a VelocityModel scorer and matching predicted NormData."""
 
     def _build(
         *,
@@ -36,7 +36,7 @@ def zgain_setup(
         visits_subject_a: tuple[int, int] = (1, 2),
         r: float = 0.8,
         extra_visits: list[int] | None = None,
-    ) -> tuple[ZGainScore, NormData, CorrelationMatrix]:
+    ) -> tuple[VelocityModel, NormData, CorrelationMatrix]:
         df = blr_longitudinal_dataframe_factory(extra_visits=extra_visits)
         if extra_visits is None:
             mask = df["sub_id"] == "a"
@@ -54,7 +54,7 @@ def zgain_setup(
             covariate="covariate_0",
             estimated_range=(0, 25),
         )
-        scorer = ZGainScore(fitted_norm_blr_model, corr)
+        scorer = VelocityModel(fitted_norm_blr_model, corr)
         return scorer, data, corr
 
     return _build
@@ -119,7 +119,7 @@ def test_zgain_sorts_by_visit_label_not_row_order(
         covariate="covariate_0",
     )
     corr = CorrelationMatrix(matrix, covariate="covariate_0", estimated_range=(0, 25))
-    scores = ZGainScore(fitted_norm_blr_model, corr).score(data)
+    scores = VelocityModel(fitted_norm_blr_model, corr).score(data)
     assert scores.sel(
         subjects="a", response_vars="response_var_0"
     ).item() == pytest.approx(expected_zgain(z_prev, z_last, r))
@@ -145,7 +145,7 @@ def test_zgain_leaves_single_visit_subject_as_nan(
         covariate="covariate_0",
     )
     corr = CorrelationMatrix(matrix, covariate="covariate_0", estimated_range=(0, 25))
-    scores = ZGainScore(fitted_norm_blr_model, corr).score(data)
+    scores = VelocityModel(fitted_norm_blr_model, corr).score(data)
     assert np.isnan(scores.sel(subjects="b", response_vars="response_var_0").item())
     assert np.isfinite(scores.sel(subjects="a", response_vars="response_var_0").item())
 
@@ -156,7 +156,7 @@ def test_zgain_caches_and_overwrites_on_rescore(
     blr_longitudinal_dataframe_factory,
     blr_predicted_norm_data_factory,
 ):
-    scorer = ZGainScore(fitted_norm_blr_model, blr_correlation_matrix)
+    scorer = VelocityModel(fitted_norm_blr_model, blr_correlation_matrix)
     data_v1 = blr_predicted_norm_data_factory(
         blr_longitudinal_dataframe_factory(),
         z_values=np.array([[0.0], [1.0], [0.0], [0.0]]),
@@ -177,7 +177,7 @@ def test_zgain_rejects_unpredicted_data(
     blr_correlation_matrix,
     blr_predicted_longitudinal_norm_data,
 ):
-    scorer = ZGainScore(fitted_norm_blr_model, blr_correlation_matrix)
+    scorer = VelocityModel(fitted_norm_blr_model, blr_correlation_matrix)
     bad = blr_predicted_longitudinal_norm_data.drop_vars("Z")
     with pytest.raises(ValueError, match="'Z'"):
         scorer.score(bad)
@@ -189,7 +189,7 @@ def test_zgain_rejects_duplicate_visit_labels(
     blr_longitudinal_dataframe_factory,
     blr_predicted_norm_data_factory,
 ):
-    scorer = ZGainScore(fitted_norm_blr_model, blr_correlation_matrix)
+    scorer = VelocityModel(fitted_norm_blr_model, blr_correlation_matrix)
     data = blr_predicted_norm_data_factory(
         blr_longitudinal_dataframe_factory(duplicate_visits=True)
     )
@@ -212,7 +212,7 @@ def test_zgain_subject_order_follows_first_appearance(
         max_age=50,
     )
     corr = CorrelationMatrix(matrix, covariate="covariate_0", estimated_range=(0, 50))
-    scores = ZGainScore(fitted_norm_blr_model, corr).score(data)
+    scores = VelocityModel(fitted_norm_blr_model, corr).score(data)
     assert list(scores.coords["subjects"].values) == ["a", "b", "c"]
 
 
@@ -377,7 +377,7 @@ def test_saved_scores_match_returned_scores(
     blr_predicted_norm_data_factory,
 ):
     if score_type == "zgain":
-        scorer = ZGainScore(fitted_norm_blr_model, blr_correlation_matrix)
+        scorer = VelocityModel(fitted_norm_blr_model, blr_correlation_matrix)
     else:
         scorer = ZDiffScore(fitted_norm_blr_model, blr_predicted_longitudinal_norm_data)
     data = blr_predicted_norm_data_factory(

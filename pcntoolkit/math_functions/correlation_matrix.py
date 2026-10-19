@@ -46,10 +46,10 @@ class CorrelationMatrix:
 
     >>> corr = CorrelationMatrix.load("my_matrices/rh_G_front_middle_thickness.csv")
 
-    Either way, pass it to a score:
+    Either way, pass it to a velocity model:
 
-    >>> from pcntoolkit import ZGainScore
-    >>> zgain = ZGainScore(model, corr)
+    >>> from pcntoolkit import VelocityModel
+    >>> velocity = VelocityModel(model, corr)
 
     Parameters
     ----------

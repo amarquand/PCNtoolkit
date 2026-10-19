@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from pcntoolkit.normative_model import NormativeModel
 
 
-class ZGainScore(LongitudinalScore):
+class VelocityModel(LongitudinalScore):
     """Velocity centiles from Bayer et al., 2026 (preprint).
 
     The z-gain score asks whether a subject's later z-score is surprising once

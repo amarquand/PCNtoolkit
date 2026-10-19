@@ -573,7 +573,7 @@ def compute_thriveline_y(
     thrive_Z : xr.DataArray or xr.Dataset
         Propagated z-scores from ``compute_thrivelines``, with dimensions
         ``(segment, response_vars, offset)``. When an ``xr.Dataset`` is
-        passed (e.g. from ``ZGainScore.get_thrivelines``),
+        passed (e.g. from ``VelocityModel.get_thrivelines``),
         it must contain data variables ``Z`` and ``X``; ``thrive_X`` may then
         be omitted.
     thrive_X : xr.DataArray, optional
@@ -701,13 +701,14 @@ def validate_thrivelines(thrivelines: pd.DataFrame) -> None:
     """Check that a pre-computed thriveline table can be plotted."""
     if not isinstance(thrivelines, pd.DataFrame):
         raise TypeError(
-            "thrivelines must be a pandas DataFrame from ZGainScore.get_thrivelines()."
+            "thrivelines must be a pandas DataFrame from "
+            "VelocityModel.get_thrivelines()."
         )
     missing = [col for col in THRIVELINE_DF_COLUMNS if col not in thrivelines.columns]
     if missing:
         raise ValueError(
             f"thrivelines is missing columns {missing}. "
-            "Compute it with ZGainScore.get_thrivelines() first."
+            "Compute it with VelocityModel.get_thrivelines() first."
         )
 
 

@@ -6,7 +6,7 @@ from .dataio.data_factory import (
     load_lnm,
 )
 from .dataio.norm_data import NormData
-from .longitudinal_score import LongitudinalScore, ZDiffScore, ZGainScore
+from .longitudinal_score import LongitudinalScore, VelocityModel, ZDiffScore
 from .math_functions.basis_function import (
     BsplineBasisFunction,
     CompositeBasisFunction,
@@ -62,5 +62,5 @@ __all__ = [
     "plot_thrivelines",
     "LongitudinalScore",
     "ZDiffScore",
-    "ZGainScore",
+    "VelocityModel",
 ]

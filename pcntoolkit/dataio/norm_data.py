@@ -383,8 +383,8 @@ class NormData(xr.Dataset):
         visits: str, optional
             The name of the column containing visit labels for longitudinal
             data (e.g. ``"visit"``). Labels must be numeric (e.g. 1, 2, 3) so
-            that visits can be ordered in time. Required by the longitudinal
-            scores (``ZDiffScore`` / ``ZGainScore``).
+            that visits can be ordered in time. Required by ``ZDiffScore``
+            and ``VelocityModel``.
         attrs : Mapping[str, Any] | None, optional
             Additional attributes for the dataset, by default None.
         remove_Nan: bool

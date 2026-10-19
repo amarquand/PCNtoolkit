@@ -1,9 +1,9 @@
 from .longitudinal_score import LongitudinalScore
+from .velocity_model import VelocityModel
 from .zdiff_score import ZDiffScore
-from .zgain_score import ZGainScore
 
 __all__ = [
     "LongitudinalScore",
     "ZDiffScore",
-    "ZGainScore",
+    "VelocityModel",
 ]
