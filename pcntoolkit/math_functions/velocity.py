@@ -178,9 +178,16 @@ def fill_missing(bandwidth: int, cors: np.ndarray) -> np.ndarray:
         )
         # Predict Fisher correlations for every allowed age pair.
         y_pred = regmodel.predict(Phi.drop(columns="y"))
-        # Write the predictions symmetrically into the matrix.
-        for i, (age1, age2) in enumerate(offset_indices(max_age, bandwidth)):
-            newcors[rv, age1, age2] = newcors[rv, age2, age1] = y_pred[i].item()
+        # List the age pairs in the same order as the rows of Phi:
+        # first all pairs 1 year apart, then all pairs 2 years apart, etc.
+        pairs = [
+            (age1, age1 + offset)
+            for offset in range(1, bandwidth + 1)
+            for age1 in range(max_age - offset + 1)
+        ]
+        # Put each predicted correlation in the cell of its age pair.
+        for (age1, age2), y in zip(pairs, y_pred.ravel(), strict=True):
+            newcors[rv, age1, age2] = newcors[rv, age2, age1] = y
     # Inverse Fisher transform (tanh)
     # Convert predicted Fisher values back to ordinary correlations.
     return np.tanh(newcors)
