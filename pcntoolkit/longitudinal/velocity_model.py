@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from pcntoolkit.math_functions.correlation_matrix import CorrelationMatrix
 from pcntoolkit.math_functions.velocity import (
     compute_thriveline_y,
     compute_thrivelines,
@@ -16,6 +15,7 @@ from pcntoolkit.math_functions.velocity import (
     thrivelines_to_dataframe,
 )
 
+from .correlation_matrix import CorrelationMatrix
 from .longitudinal_score import LongitudinalScore
 
 # Import the heavy classes only during type checking.

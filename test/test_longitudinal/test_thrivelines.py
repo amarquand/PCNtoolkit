@@ -13,7 +13,7 @@ import pytest
 import xarray as xr
 from scipy.stats import norm
 
-from pcntoolkit.longitudinal_score.velocity_model import VelocityModel
+from pcntoolkit.longitudinal.velocity_model import VelocityModel
 from pcntoolkit.math_functions.velocity import (
     _resolve_reference_batch_effects,
     compute_thrivelines,

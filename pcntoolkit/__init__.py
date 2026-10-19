@@ -6,7 +6,12 @@ from .dataio.data_factory import (
     load_lnm,
 )
 from .dataio.norm_data import NormData
-from .longitudinal_score import LongitudinalScore, VelocityModel, ZDiffScore
+from .longitudinal import (
+    CorrelationMatrix,
+    LongitudinalScore,
+    VelocityModel,
+    ZDiffScore,
+)
 from .math_functions.basis_function import (
     BsplineBasisFunction,
     CompositeBasisFunction,
@@ -14,7 +19,6 @@ from .math_functions.basis_function import (
     LinearBasisFunction,
     PolynomialBasisFunction,
 )
-from .math_functions.correlation_matrix import CorrelationMatrix
 from .math_functions.likelihood import (
     BetaLikelihood,
     NormalLikelihood,

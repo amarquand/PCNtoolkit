@@ -7,9 +7,9 @@ import pandas as pd
 import pytest
 
 from pcntoolkit.dataio.norm_data import NormData
-from pcntoolkit.longitudinal_score.velocity_model import VelocityModel
-from pcntoolkit.longitudinal_score.zdiff_score import ZDiffScore
-from pcntoolkit.math_functions.correlation_matrix import CorrelationMatrix
+from pcntoolkit.longitudinal.correlation_matrix import CorrelationMatrix
+from pcntoolkit.longitudinal.velocity_model import VelocityModel
+from pcntoolkit.longitudinal.zdiff_score import ZDiffScore
 from test.test_longitudinal.conftest import (
     expected_zgain,
     set_z_scores,
