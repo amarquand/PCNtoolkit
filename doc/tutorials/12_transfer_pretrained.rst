@@ -28,12 +28,17 @@ Install requests manually as it is not install with
 
 .. code:: text
 
-    Requirement already satisfied: requests in C:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages (2.32.5)
-    Requirement already satisfied: charset_normalizer<4,>=2 in C:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages (from requests) (3.4.4)
-    Requirement already satisfied: idna<4,>=2.5 in C:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages (from requests) (3.11)
-    Requirement already satisfied: urllib3<3,>=1.21.1 in C:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages (from requests) (2.6.3)
-    Requirement already satisfied: certifi>=2017.4.17 in C:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages (from requests) (2026.1.4)
-    
+    Requirement already satisfied: requests in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (2.34.2)
+
+    Requirement already satisfied: charset_normalizer<4,>=2 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from requests) (3.5.1)
+
+    Requirement already satisfied: idna<4,>=2.5 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from requests) (3.20)
+
+    Requirement already satisfied: urllib3<3,>=1.26 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from requests) (2.8.0)
+
+    Requirement already satisfied: certifi>=2023.5.7 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from requests) (2026.7.22)
+
+
 
 .. code:: ipython3
 
@@ -43,7 +48,6 @@ Install requests manually as it is not install with
     import zipfile
     from urllib.parse import unquote
     
-    import matplotlib.pyplot as plt
     import pandas as pd
     import requests
     import seaborn as sns
@@ -100,8 +104,8 @@ first ask the server which ones are available.
     BLRw_sa_DES_lifespan_37K_66sites.zip
     BLRw_fc_yeo17_lifespan_21K_40sites.zip
     HBR_Sb_sa_DES_lifespan_37K_66sites.zip
-    HBR_Sb_sa_DK_lifespan_46K_59sites.zip
     BLRw_ct_DES_lifespan_67K_89sites.zip
+    HBR_Sb_sa_lifespan_DK_46K_59sites.zip
     
 
 The file names tell you what each model contains:
@@ -186,7 +190,8 @@ parcellation, trained on 67.000 subjects from 89 sites.
 
 .. code:: text
 
-    Model available at c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\pretrained\BLRw_ct_DES_lifespan_67K_89sites
+    Downloading BLRw_ct_DES_lifespan_67K_89sites ...
+    Model available at /home/runner/work/PCNtoolkit/PCNtoolkit/resources/pretrained/BLRw_ct_DES_lifespan_67K_89sites
     
 
 3. Load the model and see what it expects
@@ -218,11 +223,13 @@ models published earlier.
 
 .. code:: text
 
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\output.py:295: UserWarning: Process: 5004 - 2026-08-03 21:38:32 - This model was saved with PCNtoolkit v1.1.1, but you are running v1.2.0.post1. Loading this model in v1.2.0.post1...
+    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/output.py:309: UserWarning: Process: 3147 - 2026-09-25 18:00:42 - This model was saved with PCNtoolkit v1.1.2, but you are running v1.4.0. Loading this model in v1.4.0...
       warnings.warn(message, category)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\output.py:295: UserWarning: Process: 5004 - 2026-08-03 21:38:32 - This model was saved with PCNtoolkit v1.1.2, but you are running v1.2.0.post1. Loading this model in v1.2.0.post1...
+    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/output.py:309: UserWarning: Process: 3147 - 2026-09-25 18:00:42 - This model was saved with PCNtoolkit v1.1.1, but you are running v1.4.0. Loading this model in v1.4.0...
       warnings.warn(message, category)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\output.py:295: UserWarning: Process: 5004 - 2026-08-03 21:38:33 - This model was saved with PCNtoolkit v1.1.2, but you are running v1.2.0.post1. Loading this model in v1.2.0.post1...
+    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/output.py:309: UserWarning: Process: 3147 - 2026-09-25 18:00:43 - This model was saved with PCNtoolkit v1.1.1, but you are running v1.4.0. Loading this model in v1.4.0...
+      warnings.warn(message, category)
+    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/output.py:309: UserWarning: Process: 3147 - 2026-09-25 18:00:43 - This model was saved with PCNtoolkit v1.1.2, but you are running v1.4.0. Loading this model in v1.4.0...
       warnings.warn(message, category)
     
 
@@ -233,12 +240,6 @@ models published earlier.
       site: 89 levels, e.g. ['ABCD_01', 'ABCD_02', 'ABCD_03']
       sex: 2 levels, e.g. ['F', 'M']
     Response vars : 150
-    
-
-.. code:: text
-
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\output.py:295: UserWarning: Process: 5004 - 2026-08-03 21:38:33 - This model was saved with PCNtoolkit v1.1.1, but you are running v1.2.0.post1. Loading this model in v1.2.0.post1...
-      warnings.warn(message, category)
     
 
 4. Prepare our own data
@@ -264,7 +265,9 @@ b. **The batch effects must use the same encoding.** The BLR lifespan
     fcon.columns = [c[1] if isinstance(c, tuple) else c for c in fcon.columns]
     
     # The lifespan BLR models expect sex coded as F/M
-    if set(fcon["sex"].unique()) <= {0, 1}: # note that load_fcon1000() already converts sex to M/F, so this check is not strictly necessary
+    if (
+        set(fcon["sex"].unique()) <= {0, 1}
+    ):  # note that load_fcon1000() already converts sex to M/F, so this check is not strictly necessary
         fcon["sex"] = fcon["sex"].map({0: "F", 1: "M"})
     
     fcon["sub_id"] = fcon.index.astype(str)

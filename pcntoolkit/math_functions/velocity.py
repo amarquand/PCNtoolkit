@@ -1,6 +1,6 @@
 """Algorithms for longitudinal (velocity-centile) modelling.
 
-This modules has the mathematical implementation of the correlation matrix, 
+This modules has the mathematical implementation of the correlation matrix,
 thrivelines and conditional forecasting.
 """
 
@@ -15,15 +15,21 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pandas as pd
 import xarray as xr
+from scipy.stats import norm
 from sklearn.linear_model import LinearRegression
 
 if TYPE_CHECKING:
     from pcntoolkit.dataio.norm_data import NormData
     from pcntoolkit.normative_model import NormativeModel
 
+# Same default centiles as NormativeModel.compute_centiles, so thrivelines
+# start on the centile curves that are plotted by default.
+DEFAULT_THRIVELINE_CENTILES = [0.05, 0.25, 0.5, 0.75, 0.95]
+
 # ------------------------------------------------------------------- #
 # Correlation matrix
 # ------------------------------------------------------------------- #
+
 
 def compute_correlation_matrix(
     data: NormData,
@@ -41,8 +47,8 @@ def compute_correlation_matrix(
         Longitudinal data containing covariates (X), predicted z-scores (Z),
         batch effects and subject ids.
     bandwidth : int
-        The age-offset range within which correlations are computed; larger
-        offsets are interpolated by :func:`fill_missing`.
+        Widest age gap, in years, to estimate correlations for.
+        Correlations for wider gaps are set to 0.
     covariate_name : str, default "age"
         Covariate used to index the correlation matrix.
 
@@ -53,9 +59,9 @@ def compute_correlation_matrix(
         ``(response_vars, f"{covariate_name}_1", f"{covariate_name}_2")``.
     """
     # Flatten the xarray dataset into one table per observation.
-    df = data.to_dataframe()[
-        ["X", "Z", "batch_effects", "subject_ids"]
-    ].droplevel(level=0, axis=1)
+    df = data.to_dataframe()[["X", "Z", "batch_effects", "subject_ids"]].droplevel(
+        level=0, axis=1
+    )
 
     # Stop early when there are no repeated subjects at all.
     if not df["subject_ids"].duplicated().any():
@@ -67,9 +73,7 @@ def compute_correlation_matrix(
         )
 
     # Bin the covariate to integer years so the matrix can be indexed by age.
-    df[covariate_name] = np.round(
-        df[covariate_name].astype(float)
-    ).astype(int)
+    df[covariate_name] = np.round(df[covariate_name].astype(float)).astype(int)
 
     # Map each integer age to the row indices of observations at that age.
     grps: dict[int, list[int]] = defaultdict(list)
@@ -99,8 +103,8 @@ def compute_correlation_matrix(
         if len(merged) >= 4:
             # Compute one correlation per response variable.
             for i, rv in enumerate(response_vars):
-                cors[i, age2, age1] = cors[i, age1, age2] = (
-                    merged[f"{rv}_x"].corr(merged[f"{rv}_y"])
+                cors[i, age2, age1] = cors[i, age1, age2] = merged[f"{rv}_x"].corr(
+                    merged[f"{rv}_y"]
                 )
         # Mark sparse age pairs as missing so regression can fill them.
         elif age1 != age2:
@@ -128,6 +132,7 @@ def compute_correlation_matrix(
             f"{covariate_name}_2": np.arange(cors.shape[1]),
         },
     )
+
 
 # ------------------------------------------------------------------- #
 # Internals for compute_correlation_matrix
@@ -175,9 +180,7 @@ def fill_missing(bandwidth: int, cors: np.ndarray) -> np.ndarray:
         y_pred = regmodel.predict(Phi.drop(columns="y"))
         # Write the predictions symmetrically into the matrix.
         for i, (age1, age2) in enumerate(offset_indices(max_age, bandwidth)):
-            newcors[rv, age1, age2] = newcors[rv, age2, age1] = (
-                y_pred[i].item()
-            )
+            newcors[rv, age1, age2] = newcors[rv, age2, age1] = y_pred[i].item()
     # Inverse Fisher transform (tanh)
     # Convert predicted Fisher values back to ordinary correlations.
     return np.tanh(newcors)
@@ -327,11 +330,11 @@ def compute_thrivelines(
     *,
     timepoint_diff: int = 1,
     z_thrive: float = -1.96,
-    propagate: Callable[[xr.DataArray, xr.DataArray | float, float], xr.DataArray] = propagate_thriveline_z,
+    propagate: Callable[
+        [xr.DataArray, xr.DataArray | float, float], xr.DataArray
+    ] = propagate_thriveline_z,
     anchor_step: int = 1,
-    z_anchor_start: int = -3,
-    z_anchor_end: int = 4,
-    z_anchors: list[float] | np.ndarray | None = None,
+    centiles: list[float] | np.ndarray | None = None,
     covariate_range: tuple[int, int] | None = None,
 ) -> tuple[xr.DataArray, xr.DataArray]:
     """Build a grid of thriveline segments from a longitudinal correlation matrix.
@@ -365,12 +368,11 @@ def compute_thrivelines(
         propagators may be supplied to extend the toolbox.
     anchor_step : int, default 1
         Spacing between starting covariate anchors on the overlay grid.
-    z_anchor_start, z_anchor_end : int, default -3 and 4
-        Half-open range ``[z_anchor_start, z_anchor_end)`` of integer starting
-        z-scores used when ``z_anchors`` is not provided.
-    z_anchors : array-like of float, optional
-        Explicit starting z-scores (e.g. ``norm.ppf(centiles)``). When given,
-        ``z_anchor_start`` and ``z_anchor_end`` are ignored.
+    centiles : array-like of float, optional
+        Centiles (between 0 and 1) where thrivelines start. Defaults to
+        ``[0.05, 0.25, 0.5, 0.75, 0.95]``, the same centiles that
+        :func:`~pcntoolkit.util.plotter.plot_thrivelines` draws by default, so
+        every thriveline starts on a plotted centile curve.
     covariate_range : tuple of int, optional
         ``(min, max)`` covariate bounds used to slice ``R`` and place grid
         anchors. When omitted, anchors span the covariate coordinates in ``R``.
@@ -382,10 +384,25 @@ def compute_thrivelines(
         ``(segment, response_vars, offset)``. Each segment is one anchor pair
         propagated over ``timepoint_diff``; segments with missing or zero
         correlations are left as NaN and trigger a :class:`UserWarning`.
+
+    Raises
+    ------
+    ValueError
+        If ``timepoint_diff`` is not positive, or if a centile is not strictly
+        between 0 and 1.
     """
     # Reject non-positive covariate steps because propagation needs a forward hop.
     if timepoint_diff <= 0:
         raise ValueError("timepoint_diff must be > 0.")
+
+    if centiles is None:
+        centiles = DEFAULT_THRIVELINE_CENTILES
+    centiles = np.asarray(centiles, dtype=float)
+    # The 0th and 100th centiles map to infinite z-scores.
+    if np.any((centiles <= 0) | (centiles >= 1)):
+        raise ValueError(
+            f"centiles must be strictly between 0 and 1, got {centiles.tolist()}."
+        )
 
     # Ensure R carries a response_vars dimension and collect its labels.
     R, response_vars = _response_vars_from_R(R)
@@ -398,7 +415,9 @@ def compute_thrivelines(
         min_covariate, max_covariate = _covariate_bounds_from_R(R)
 
     # Identify which matrix axes correspond to later and earlier covariate values.
-    age_dim_later, age_dim_earlier = _covariate_age_dims(R.isel(response_vars=0, drop=True))
+    age_dim_later, age_dim_earlier = _covariate_age_dims(
+        R.isel(response_vars=0, drop=True)
+    )
     # Extend the grid upper bound so the last anchor can still take one forward step.
     end_covariate = max_covariate + timepoint_diff
 
@@ -407,9 +426,7 @@ def compute_thrivelines(
         min_covariate,
         end_covariate,
         anchor_step,
-        z_anchor_start,
-        z_anchor_end,
-        z_anchors=z_anchors,
+        norm.ppf(centiles),
     )
 
     # Drop anchors whose forward step would fall outside the correlation matrix.
@@ -567,8 +584,7 @@ def compute_thriveline_y(
             )
         if covariate not in covariates:
             raise ValueError(
-                f"covariate '{covariate}' is not among model covariates: "
-                f"{covariates}."
+                f"covariate '{covariate}' is not among model covariates: {covariates}."
             )
         thrive_covariate = covariate
 
@@ -632,9 +648,9 @@ def compute_thriveline_y(
             )
             # Invert the regional normative map: (X, Z) -> scaled Y, then unscale.
             y_scaled = model[rv].backward(X_da, be_slice, Z_da).values
-            y_vals = model.outscalers[rv].inverse_transform(
-                y_scaled.reshape(-1, 1)
-            ).ravel()
+            y_vals = (
+                model.outscalers[rv].inverse_transform(y_scaled.reshape(-1, 1)).ravel()
+            )
             y_rv[valid, o_idx] = y_vals
 
         thrive_Y.loc[{"response_vars": rv}] = y_rv
@@ -660,8 +676,7 @@ def validate_thrivelines(thrivelines: pd.DataFrame) -> None:
     """Check that a pre-computed thriveline table can be plotted."""
     if not isinstance(thrivelines, pd.DataFrame):
         raise TypeError(
-            "thrivelines must be a pandas DataFrame from "
-            "ZGainScore.get_thrivelines()."
+            "thrivelines must be a pandas DataFrame from ZGainScore.get_thrivelines()."
         )
     missing = [col for col in THRIVELINE_DF_COLUMNS if col not in thrivelines.columns]
     if missing:
@@ -696,8 +711,12 @@ def thrivelines_to_dataframe(
     """
     rows: list[dict[str, object]] = []
     # Segment-level anchor metadata attached by compute_thrivelines.
-    start_ages = thrive_Z.coords["start_age"].values if "start_age" in thrive_Z.coords else None
-    start_zs = thrive_Z.coords["start_z"].values if "start_z" in thrive_Z.coords else None
+    start_ages = (
+        thrive_Z.coords["start_age"].values if "start_age" in thrive_Z.coords else None
+    )
+    start_zs = (
+        thrive_Z.coords["start_z"].values if "start_z" in thrive_Z.coords else None
+    )
     offsets = thrive_Z.coords["offset"].values
 
     for rv in thrive_Z.coords["response_vars"].values:
@@ -706,16 +725,8 @@ def thrivelines_to_dataframe(
         y_rv = thrive_Y.sel(response_vars=rv, drop=True)
         for seg_idx in range(z_rv.sizes["segment"]):
             segment = int(z_rv.coords["segment"].values[seg_idx])
-            start_age = (
-                float(start_ages[seg_idx])
-                if start_ages is not None
-                else np.nan
-            )
-            start_z = (
-                float(start_zs[seg_idx])
-                if start_zs is not None
-                else np.nan
-            )
+            start_age = float(start_ages[seg_idx]) if start_ages is not None else np.nan
+            start_z = float(start_zs[seg_idx]) if start_zs is not None else np.nan
             # Each segment has two points: offset 0 (anchor) and offset timepoint_diff.
             for off_idx, offset in enumerate(offsets):
                 rows.append(
@@ -806,7 +817,9 @@ def _encode_batch_effects(
 def _covariate_bounds_from_R(R: xr.DataArray) -> tuple[int, int]:
     """Return the minimum and maximum integer covariate values present in ``R``."""
     # Resolve the two covariate axis names on a single-region slice of R.
-    age_dim_later, age_dim_earlier = _covariate_age_dims(R.isel(response_vars=0, drop=True))
+    age_dim_later, age_dim_earlier = _covariate_age_dims(
+        R.isel(response_vars=0, drop=True)
+    )
     # Collect every covariate coordinate value from both matrix axes.
     ages = np.concatenate(
         [
@@ -826,7 +839,9 @@ def _slice_r_to_covariate_range(
     # Unpack the inclusive lower and upper covariate bounds.
     lo, hi = covariate_range
     # Resolve which dimensions index later and earlier covariate values.
-    age_dim_later, age_dim_earlier = _covariate_age_dims(R.isel(response_vars=0, drop=True))
+    age_dim_later, age_dim_earlier = _covariate_age_dims(
+        R.isel(response_vars=0, drop=True)
+    )
     # Slice both covariate axes symmetrically to the requested range.
     return R.sel({age_dim_later: slice(lo, hi), age_dim_earlier: slice(lo, hi)})
 
@@ -872,26 +887,29 @@ def _grid_anchors(
     start_covariate: int,
     end_covariate: int,
     anchor_step: int,
-    z_anchor_start: int,
-    z_anchor_end: int,
-    z_anchors: list[float] | np.ndarray | None = None,
+    z_values: np.ndarray,
 ) -> tuple[xr.DataArray, xr.DataArray]:
     """Build a Cartesian grid of covariate and z-score anchor points."""
     # Place covariate anchors from start up to (but not including) end_covariate.
     covariate_anchors = np.arange(start_covariate, end_covariate, anchor_step)
-    # Use explicit z anchors when provided, otherwise an integer z-score range.
-    if z_anchors is not None:
-        z_values = np.asarray(z_anchors, dtype=float)
-    else:
-        z_values = np.arange(z_anchor_start, z_anchor_end)
     # Form every (covariate, z-score) pair on the overlay grid.
     age_grid, z_grid = np.meshgrid(covariate_anchors, z_values, indexing="ij")
     # Assign a flat segment index to each grid cell.
     segment = np.arange(age_grid.size)
     # Return covariate and z anchors as parallel segment-indexed arrays.
     return (
-        xr.DataArray(age_grid.ravel(), dims=("segment",), coords={"segment": segment}, name="start_age"),
-        xr.DataArray(z_grid.ravel(), dims=("segment",), coords={"segment": segment}, name="start_z"),
+        xr.DataArray(
+            age_grid.ravel(),
+            dims=("segment",),
+            coords={"segment": segment},
+            name="start_age",
+        ),
+        xr.DataArray(
+            z_grid.ravel(),
+            dims=("segment",),
+            coords={"segment": segment},
+            name="start_z",
+        ),
     )
 
 

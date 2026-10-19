@@ -31,11 +31,12 @@ Imports
 .. code:: ipython3
 
     import warnings
-    import logging
     
-    
-    import pandas as pd
     import matplotlib.pyplot as plt
+    import pandas as pd
+    import seaborn as sns
+    
+    import pcntoolkit.util.output
     from pcntoolkit import (
         BLR,
         BsplineBasisFunction,
@@ -44,9 +45,6 @@ Imports
         load_fcon1000,
         plot_centiles_advanced,
     )
-    
-    import pcntoolkit.util.output
-    import seaborn as sns
     
     sns.set_style("darkgrid")
     
@@ -71,14 +69,14 @@ smaller datasets with 2 sites
     norm_data: NormData = load_fcon1000()
     
     # Select the white matter hypointensities feature
-    features_to_model = [
-        "WM-hypointensities"
-    ]
+    features_to_model = ["WM-hypointensities"]
     norm_data = norm_data.sel({"response_vars": features_to_model})
     
     # Leave two sites out for doing transfer and extend later
     transfer_sites = ["Milwaukee_b", "Oulu"]
-    transfer_data, fit_data = norm_data.batch_effects_split({"site": transfer_sites}, names=("transfer", "fit"))
+    transfer_data, fit_data = norm_data.batch_effects_split(
+        {"site": transfer_sites}, names=("transfer", "fit")
+    )
     
     # Split into train and test sets
     train, test = fit_data.train_test_split()
@@ -92,18 +90,12 @@ Visualize the data
     feature_to_plot = features_to_model[0]
     datasets = {
         "Fit data": train.merge(test, name="fit"),
-        "Transfer data": transfer_train.merge(
-            transfer_test, name="transfer"
-        ),
+        "Transfer data": transfer_train.merge(transfer_test, name="transfer"),
     }
     
-    fig, axes = plt.subplots(
-        2, 2, figsize=(15, 8)
-    )
+    fig, axes = plt.subplots(2, 2, figsize=(15, 8))
     
-    for i, (name, data) in enumerate(
-        datasets.items()
-    ):
+    for i, (name, data) in enumerate(datasets.items()):
         df = data.to_dataframe()
         # Count plot
         sns.countplot(
@@ -178,13 +170,9 @@ We first fit a BLR model on the dataset with 21 sites.
 
 .. code:: ipython3
 
-    test = model.fit_predict(train, test);
-    
+    test = model.fit_predict(train, test)
     plot_centiles_advanced(
-        model,
-        scatter_data=train,
-        batch_effects = 'all',
-        show_legend = False
+        model, scatter_data=train, batch_effects="all", show_legend=False
     )
 
 
@@ -221,11 +209,7 @@ the small dataset, we can show how bad such a model would be:
     
     small_model.fit_predict(transfer_train, transfer_test)
     
-    plot_centiles_advanced(
-        small_model,
-        scatter_data=transfer_test,
-        batch_effects='all'
-    )
+    plot_centiles_advanced(small_model, scatter_data=transfer_test, batch_effects="all")
 
 
 
@@ -254,45 +238,20 @@ merges it with the real local data, and refits a full model.
 
 .. code:: ipython3
 
-    extended_model = model.extend_predict(transfer_train, transfer_test);
-    
+    extended_model = model.extend_predict(transfer_train, transfer_test)
     plot_centiles_advanced(
         extended_model,
         scatter_data=test,
-        batch_effects='all',
-        show_legend = False,
-        covariate_ranges = {"age": (20, 65)} # for comparison reasons: force the x-axis to be the same as the transfer plot
+        batch_effects="all",
+        show_legend=False,
+        covariate_ranges={
+            "age": (20, 65)
+        },  # for comparison reasons: force the x-axis to be the same as the transfer plot
     )
 
 
-.. code:: text
 
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:632: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.4374536951328396e-32.
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\output.py:295: UserWarning: Process: 8024 - 2026-08-03 23:12:59 - Posterior estimation failed: 
-    Matrix is not positive definite. 
-    The optimizer could not find a stable solution. Retrying optimization.
-      warnings.warn(message, category)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:632: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.214057563446112e-32.
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:632: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.2079019777145647e-32.
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:632: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.2551514238264925e-32.
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:632: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.416109766795953e-32.
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:632: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.4369354212062313e-32.
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:632: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.015174144158092e-32.
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:632: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.904144774168133e-32.
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    c:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\scipy\optimize\_numdiff.py:687: RuntimeWarning: overflow encountered in divide
-      df_dx = [delf / delx for delf, delx in zip(df, dx)]
-    
-
-
-.. image:: 06_transfer_extend_files/06_transfer_extend_22_1.png
+.. image:: 06_transfer_extend_files/06_transfer_extend_22_0.png
 
 
 
@@ -329,13 +288,12 @@ centiles plot below), not the age range of the reference model.
 
 .. code:: ipython3
 
-    transfered_model = model.transfer_predict(transfer_train, transfer_test);
-    
+    transfered_model = model.transfer_predict(transfer_train, transfer_test)
     plot_centiles_advanced(
         transfered_model,
-        scatter_data=transfer_test, # note you can not select scatter_data=test as with transfer we lose info about the reference model sites 
-        batch_effects='all',
-        show_legend = False
+        scatter_data=transfer_test,  # note you can not select scatter_data=test as with transfer we lose info about the reference model sites
+        batch_effects="all",
+        show_legend=False,
     )
 
 
@@ -377,41 +335,18 @@ reference point that both methods are trying to approximate.
         outscaler="standardize",
     )
     
-    pooled_model.fit_predict(all_train, all_test);
-    
+    pooled_model.fit_predict(all_train, all_test)
     plot_centiles_advanced(
         pooled_model,
         scatter_data=all_test,
         batch_effects="all",
         show_legend=False,
-        covariate_ranges = {"age": (20, 65)} # for comparison reasons: force the x-axis to be the same as the transfer plot
+        covariate_ranges={
+            "age": (20, 65)
+        },  # for comparison reasons: force the x-axis to be the same as the transfer plot
     );
 
 
-.. code:: text
 
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:632: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.6928204946457924e-18.
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\output.py:295: UserWarning: Process: 8024 - 2026-08-03 23:14:49 - Posterior estimation failed: 
-    Matrix is not positive definite. 
-    The optimizer could not find a stable solution. Retrying optimization.
-      warnings.warn(message, category)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:632: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.9626010741685792e-18.
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:632: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.6079551777131047e-18.
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:632: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.621390513519887e-18.
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:632: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.6838127920727597e-18.
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:632: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.6925807577914705e-18.
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:632: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.5317273255736646e-18.
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:632: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.8708559802049616e-18.
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-    
-
-
-.. image:: 06_transfer_extend_files/06_transfer_extend_29_1.png
+.. image:: 06_transfer_extend_files/06_transfer_extend_29_0.png
 

@@ -88,9 +88,7 @@ class ZGainScore(LongitudinalScore):
         z_thrive: float = -1.96,
         propagate: Callable[[xr.DataArray, xr.DataArray | float, float], xr.DataArray] = propagate_thriveline_z,
         anchor_step: int = 1,
-        z_anchor_start: int = -3,
-        z_anchor_end: int = 4,
-        z_anchors: list[float] | np.ndarray | None = None,
+        centiles: list[float] | np.ndarray | None = None,
         covariate_range: tuple[int, int] | None = None,
         save_path: str | PathLike[str] | None = None,
     ) -> pd.DataFrame:
@@ -118,12 +116,11 @@ class ZGainScore(LongitudinalScore):
             ``propagate(hop_correlations, start_z, z_thrive) -> xr.DataArray``.
         anchor_step : int, default 1
             Spacing between starting covariate anchors on the overlay grid.
-        z_anchor_start, z_anchor_end : int, default -3 and 4
-            Half-open range ``[z_anchor_start, z_anchor_end)`` of integer
-            starting z-scores used when ``z_anchors`` is not provided.
-        z_anchors : array-like of float, optional
-            Explicit starting z-scores (e.g. ``norm.ppf(centiles)``). When
-            given, ``z_anchor_start`` and ``z_anchor_end`` are ignored.
+        centiles : array-like of float, optional
+            Centiles (between 0 and 1) where thrivelines start. Defaults to
+            ``[0.05, 0.25, 0.5, 0.75, 0.95]``, the same centiles that
+            :func:`~pcntoolkit.util.plotter.plot_thrivelines` draws by
+            default, so every thriveline starts on a plotted centile curve.
         covariate_range : tuple of int, optional
             ``(min, max)`` covariate bounds used to slice the correlation
             matrix and place grid anchors. When omitted, anchors span the
@@ -137,6 +134,12 @@ class ZGainScore(LongitudinalScore):
             Long-form thriveline table with columns ``segment``, ``start_age``,
             ``start_z``, ``response_var``, ``offset``, ``X``, ``Z``, and ``Y``.
             Stored on the instance as :attr:`thrivelines`.
+
+        Raises
+        ------
+        ValueError
+            If ``timepoint_diff`` is not positive, or if a centile is not
+            strictly between 0 and 1.
         """
         # Step 1: propagate anchor segments in Z-space from the correlation matrix.
         # This bare name resolves to the imported velocity function (a module
@@ -147,9 +150,7 @@ class ZGainScore(LongitudinalScore):
             z_thrive=z_thrive,
             propagate=propagate,
             anchor_step=anchor_step,
-            z_anchor_start=z_anchor_start,
-            z_anchor_end=z_anchor_end,
-            z_anchors=z_anchors,
+            centiles=centiles,
             covariate_range=covariate_range,
         )
         # Step 2: map each (X, Z) point to response-scale Y via the normative model.
@@ -168,7 +169,6 @@ class ZGainScore(LongitudinalScore):
     def score(
         self,
         score_data: NormData,
-        subject_id_col: str | None = None,
         save_path: str | PathLike[str] | None = None,
     ) -> xr.DataArray:
         """Compute the z-gain score for every subject in ``score_data``.
@@ -179,9 +179,6 @@ class ZGainScore(LongitudinalScore):
             Longitudinal cohort with at least two distinct visits per subject,
             numeric visit labels on the NormData object, and z-scores already
             computed.
-        subject_id_col : str, optional
-            Subject id column name. Kept for backwards compatibility; the
-            subject ids are read from ``score_data`` itself.
         save_path : str | PathLike[str] | None, optional
             If set, write scores to this CSV path in wide format: one row per
             subject and one column per response variable.

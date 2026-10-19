@@ -16,14 +16,14 @@ why not just use it as a python package?)
 
 .. code:: ipython3
 
-    import pandas as pd
-    import numpy as np
-    from sklearn.model_selection import train_test_split
-    import seaborn as sns
-    import matplotlib.pyplot as plt
     import os
-    import sys
     import pickle
+    import sys
+    
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    import seaborn as sns
+    from sklearn.model_selection import train_test_split
 
 BLR Example
 -----------
@@ -40,7 +40,6 @@ Data preparation
     pd.read_csv(
         "https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/refs/heads/main/data/fcon1000.csv"
     ).to_csv("resources/data/fcon1000.csv", index=False)
-    
 
 .. code:: ipython3
 
@@ -50,7 +49,9 @@ Data preparation
 
     # Inspect the data
     fig, ax = plt.subplots(1, 2, figsize=(15, 5))
-    sns.scatterplot(data=data, x=("age"), y=("rh_MeanThickness_thickness"), hue=("site"), ax=ax[1])
+    sns.scatterplot(
+        data=data, x=("age"), y=("rh_MeanThickness_thickness"), hue=("site"), ax=ax[1]
+    )
     ax[1].legend([], [])
     ax[1].set_title("Scatter plot of age vs rh_MeanThickness_thickness")
     ax[1].set_xlabel("Age")
@@ -61,7 +62,6 @@ Data preparation
     ax[0].set_xlabel("Site")
     ax[0].set_ylabel("Count")
     plt.show()
-    
 
 
 
@@ -82,7 +82,9 @@ Data preparation
     batch_effects_strings = [str(b[0]) + " " + str(b[1]) for b in batch_effects.values]
     
     # Split into train and test set
-    trainidx, testidx = train_test_split(data.index, test_size=0.2, random_state=42, stratify=batch_effects_strings)
+    trainidx, testidx = train_test_split(
+        data.index, test_size=0.2, random_state=42, stratify=batch_effects_strings
+    )
     train_X = X.loc[trainidx]
     train_Y = Y.loc[trainidx]
     train_batch_effects = batch_effects.loc[trainidx]
@@ -165,8 +167,9 @@ Constructing command
     normative_model_kwargs = f"save_dir={save_dir} savemodel={savemodel} saveresults={saveresults} basis_function={basis_function} inscaler={inscaler} outscaler={outscaler}"
     runner_kwargs = f"cross_validate={cross_validate} parallelize={parallelize} job_type={job_type} n_jobs={n_jobs} temp_dir={temp_dir} log_dir={log_dir} environment={python_env}"
     blr_kwargs = f"optimizer={optimizer} n_iter={n_iter} heteroskedastic={heteroskedastic} fixed_effect={fixed_effect} warp={warp} warp_reparam={warp_reparam}"
-    full_command = f"{command} {args} {kwargs} {runner_kwargs} {normative_model_kwargs} {blr_kwargs}"
-    
+    full_command = (
+        f"{command} {args} {kwargs} {runner_kwargs} {normative_model_kwargs} {blr_kwargs}"
+    )
 
 .. code:: ipython3
 
@@ -175,7 +178,7 @@ Constructing command
 
 .. code:: text
 
-    normative -a blr -f fit_predict -c /home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/covariates.csv -r /home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/responses.csv -t /home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/test_responses.csv -e /home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/test_covariates.csv -k 5 be=/home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/batch_effects.csv t_be=/home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/test_batch_effects.csv cross_validate=True parallelize=False job_type=local n_jobs=2 temp_dir=resources/cli_example/temp log_dir=resources/cli_example/log environment=/opt/hostedtoolcache/Python/3.13.14/x64 save_dir=resources/cli_example/blr_cli/save_dir savemodel=True saveresults=True basis_function=linear inscaler=standardize outscaler=standardize optimizer=l-bfgs-b n_iter=200 heteroskedastic=True fixed_effect=True warp=WarpSinhArcsinh warp_reparam=True
+    normative -a blr -f fit_predict -c c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\covariates.csv -r c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\responses.csv -t c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\test_responses.csv -e c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\test_covariates.csv -k 5 be=c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\batch_effects.csv t_be=c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\test_batch_effects.csv cross_validate=True parallelize=False job_type=local n_jobs=2 temp_dir=resources\cli_example\temp log_dir=resources\cli_example\log environment=c:\Users\kontsi\AppData\Local\anaconda3\envs save_dir=resources\cli_example\blr_cli\save_dir savemodel=True saveresults=True basis_function=linear inscaler=standardize outscaler=standardize optimizer=l-bfgs-b n_iter=200 heteroskedastic=True fixed_effect=True warp=WarpSinhArcsinh warp_reparam=True
     
 
 Running command
@@ -188,827 +191,403 @@ Running command
 
 .. code:: text
 
-    Process: 3367 - 2026-07-22 19:01:51 - Dataset "fit_data" created.
-
+    Process: 34708 - 2026-10-15 16:52:12 - Dataset "fit_data" created.
         - 862 observations
-
         - 862 unique subjects
-
         - 1 covariates
-
         - 2 response variables
-
         - 2 batch effects:
-
         	batch_effect_0 (2)
-
     	batch_effect_1 (23)
-
         
-
-    Process: 3367 - 2026-07-22 19:01:51 - Dataset "predict_data" created.
-
+    Process: 34708 - 2026-10-15 16:52:12 - Dataset "predict_data" created.
         - 216 observations
-
         - 216 unique subjects
-
         - 1 covariates
-
         - 2 response variables
-
         - 2 batch effects:
-
         	batch_effect_0 (2)
-
     	batch_effect_1 (23)
-
         
+    Process: 34708 - 2026-10-15 16:52:12 - Task ID created: fit_predict_fit_data__2026-10-15_16-52-12_71.303223
+    Process: 34708 - 2026-10-15 16:52:12 - Temporary directory created:
+    	c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\temp\fit_predict_fit_data__2026-10-15_16-52-12_71.303223
+    Process: 34708 - 2026-10-15 16:52:12 - Log directory created:
+    	c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\log\fit_predict_fit_data__2026-10-15_16-52-12_71.303223
+    Process: 34708 - 2026-10-15 16:52:12 - Fitting models on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:12 - Fitting model for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:12 - Fitting model for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:12 - Saving model to:
+    	resources\cli_example\blr_cli\save_dir\folds\fold_0.
+    Process: 34708 - 2026-10-15 16:52:12 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:12 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:13 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:13 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:13 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:13 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:13 - Harmonizing data for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:13 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:13 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:14 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:14 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:14 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:14 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:14 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:14 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:14 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:14 - Harmonizing data for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:15 - Fitting models on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:15 - Fitting model for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:15 - Fitting model for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:15 - Saving model to:
+    	resources\cli_example\blr_cli\save_dir\folds\fold_1.
+    Process: 34708 - 2026-10-15 16:52:15 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:15 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:16 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:16 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:16 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:16 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:16 - Harmonizing data for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:16 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:16 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:17 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:17 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:17 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:17 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:17 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:17 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:17 - Harmonizing data for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:18 - Fitting models on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:18 - Fitting model for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:18 - Fitting model for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:18 - Saving model to:
+    	resources\cli_example\blr_cli\save_dir\folds\fold_2.
+    Process: 34708 - 2026-10-15 16:52:18 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:18 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:19 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:19 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:19 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:19 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:19 - Harmonizing data for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:19 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:19 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:20 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:20 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:20 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:20 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:20 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:20 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:20 - Harmonizing data for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:20 - Fitting models on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:20 - Fitting model for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:20 - Fitting model for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:21 - Saving model to:
+    	resources\cli_example\blr_cli\save_dir\folds\fold_3.
+    Process: 34708 - 2026-10-15 16:52:21 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:21 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:21 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:21 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:21 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:21 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:21 - Harmonizing data for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:22 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:22 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:23 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:23 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:23 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:23 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:23 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:23 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:23 - Harmonizing data for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:23 - Fitting models on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:23 - Fitting model for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:23 - Fitting model for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:24 - Saving model to:
+    	resources\cli_example\blr_cli\save_dir\folds\fold_4.
+    Process: 34708 - 2026-10-15 16:52:24 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:24 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:24 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:24 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:24 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:24 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:24 - Harmonizing data for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:25 - Making predictions on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing z-scores for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing z-scores for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing z-scores for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing log-probabilities for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing log-probabilities for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing log-probabilities for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing yhat for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing yhat for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:25 - Computing yhat for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:26 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 34708 - 2026-10-15 16:52:26 - Computing centiles for 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:26 - Computing centiles for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:26 - Computing centiles for response_var_0.
+    Process: 34708 - 2026-10-15 16:52:26 - Harmonizing data on 2 response variables.
+    Process: 34708 - 2026-10-15 16:52:26 - Harmonizing data for response_var_1.
+    Process: 34708 - 2026-10-15 16:52:26 - Harmonizing data for response_var_0.
+    
 
-    Process: 3367 - 2026-07-22 19:01:51 - Task ID created: fit_predict_fit_data__2026-07-22_19:01:51_300.572510
+.. code:: text
 
-    Process: 3367 - 2026-07-22 19:01:51 - Temporary directory created:
-
-    	/home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/temp/fit_predict_fit_data__2026-07-22_19:01:51_300.572510
-
-    Process: 3367 - 2026-07-22 19:01:51 - Log directory created:
-
-    	/home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/log/fit_predict_fit_data__2026-07-22_19:01:51_300.572510
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/output.py:295: UserWarning: Process: 3367 - 2026-07-22 19:01:51 - Predict data not used in k-fold cross-validation
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\output.py:342: UserWarning: Process: 34708 - 2026-10-15 16:52:12 - Predict data not used in k-fold cross-validation
       warnings.warn(message, category)
-
-    /opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/sklearn/model_selection/_split.py:812: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=5.
-
+    C:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\sklearn\model_selection\_split.py:813: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=5.
       warnings.warn(
-
-    Process: 3367 - 2026-07-22 19:01:51 - Fitting models on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:51 - Fitting model for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:51 - Fitting model for response_var_1.
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.523723946631791e-27.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.523723939977167e-27.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/output.py:295: UserWarning: Process: 3367 - 2026-07-22 19:01:51 - Posterior estimation failed: 
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\output.py:342: UserWarning: Process: 34708 - 2026-10-15 16:52:12 - Posterior estimation failed: 
     Matrix is not positive definite. 
-
     The optimizer could not find a stable solution. Retrying optimization.
-
       warnings.warn(message, category)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.375496563279125e-27.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.3754965555983415e-27.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.9980721138137064e-27.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.998072107792363e-27.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.746691663731469e-27.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.746691655603508e-27.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.104659065295494e-27.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.1046590579409974e-27.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    Process: 3367 - 2026-07-22 19:01:51 - Saving model to:
-
-    	resources/cli_example/blr_cli/save_dir/folds/fold_0.
-
-    Process: 3367 - 2026-07-22 19:01:51 - Making predictions on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:51 - Computing z-scores for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:51 - Computing z-scores for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:51 - Computing z-scores for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:51 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:51 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:51 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:51 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:51 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:51 - Computing log-probabilities for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:52 - Computing log-probabilities for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:52 - Computing yhat for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:52 - Computing yhat for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:52 - Computing yhat for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:52 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 3367 - 2026-07-22 19:01:52 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:52 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:52 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:52 - Harmonizing data on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:52 - Harmonizing data for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:52 - Harmonizing data for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:53 - Making predictions on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:53 - Computing z-scores for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:53 - Computing z-scores for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:53 - Computing z-scores for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:53 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:53 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:53 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:53 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:53 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:53 - Computing log-probabilities for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:53 - Computing log-probabilities for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:53 - Computing yhat for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:53 - Computing yhat for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:53 - Computing yhat for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:54 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 3367 - 2026-07-22 19:01:54 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:54 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:54 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:54 - Harmonizing data on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:54 - Harmonizing data for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:54 - Harmonizing data for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:55 - Fitting models on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:55 - Fitting model for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:55 - Fitting model for response_var_1.
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.2455126268504203e-20.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.6685293780657852e-18.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/output.py:295: UserWarning: Process: 3367 - 2026-07-22 19:01:55 - Posterior estimation failed: 
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\output.py:342: UserWarning: Process: 34708 - 2026-10-15 16:52:18 - Posterior estimation failed: 
     Matrix is not positive definite. 
-
     The optimizer could not find a stable solution. Retrying optimization.
-
       warnings.warn(message, category)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.910057133212752e-20.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.157907796551295e-18.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.8415638861183265e-20.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.581032369390217e-18.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.185259614266013e-20.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.3509470739771384e-18.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.691929377086917e-20.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.766179425038374e-17.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/scipy/optimize/_numdiff.py:711: RuntimeWarning: overflow encountered in divide
-
-      df_dx = [delf / delx for delf, delx in zip(df, dx)]
-
-    Process: 3367 - 2026-07-22 19:01:55 - Saving model to:
-
-    	resources/cli_example/blr_cli/save_dir/folds/fold_1.
-
-    Process: 3367 - 2026-07-22 19:01:55 - Making predictions on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:55 - Computing z-scores for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:55 - Computing z-scores for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:55 - Computing z-scores for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:55 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:55 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:55 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:55 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:55 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:55 - Computing log-probabilities for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:55 - Computing log-probabilities for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:55 - Computing yhat for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:55 - Computing yhat for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:55 - Computing yhat for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:56 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 3367 - 2026-07-22 19:01:56 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:56 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:56 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:56 - Harmonizing data on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:56 - Harmonizing data for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:56 - Harmonizing data for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:57 - Making predictions on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:57 - Computing z-scores for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:57 - Computing z-scores for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:57 - Computing z-scores for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:57 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:57 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:57 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:57 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:57 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:57 - Computing log-probabilities for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:57 - Computing log-probabilities for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:57 - Computing yhat for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:57 - Computing yhat for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:57 - Computing yhat for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:58 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 3367 - 2026-07-22 19:01:58 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:58 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:58 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:58 - Harmonizing data on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:58 - Harmonizing data for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:58 - Harmonizing data for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:58 - Fitting models on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:58 - Fitting model for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:59 - Fitting model for response_var_1.
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.701875421761123e-19.
-
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/output.py:295: UserWarning: Process: 3367 - 2026-07-22 19:01:59 - Posterior estimation failed: 
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\output.py:342: UserWarning: Process: 34708 - 2026-10-15 16:52:21 - Posterior estimation failed: 
     Matrix is not positive definite. 
-
     The optimizer could not find a stable solution. Retrying optimization.
-
       warnings.warn(message, category)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.6521548448675865e-19.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.117392383857963e-18.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.3656485817707845e-19.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.6239455744947366e-18.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.502124577440806e-19.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.17546773588249e-18.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    Process: 3367 - 2026-07-22 19:01:59 - Saving model to:
-
-    	resources/cli_example/blr_cli/save_dir/folds/fold_2.
-
-    Process: 3367 - 2026-07-22 19:01:59 - Making predictions on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:59 - Computing z-scores for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:59 - Computing z-scores for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:59 - Computing z-scores for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:59 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:59 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:59 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:59 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:59 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:59 - Computing log-probabilities for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:59 - Computing log-probabilities for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:01:59 - Computing yhat for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:01:59 - Computing yhat for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:01:59 - Computing yhat for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:00 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 3367 - 2026-07-22 19:02:00 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:00 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:00 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:00 - Harmonizing data on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:00 - Harmonizing data for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:00 - Harmonizing data for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:01 - Making predictions on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:01 - Computing z-scores for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:01 - Computing z-scores for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:01 - Computing z-scores for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:01 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:01 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:01 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:01 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:01 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:01 - Computing log-probabilities for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:01 - Computing log-probabilities for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:01 - Computing yhat for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:01 - Computing yhat for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:01 - Computing yhat for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:02 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 3367 - 2026-07-22 19:02:02 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:02 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:02 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:02 - Harmonizing data on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:02 - Harmonizing data for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:02 - Harmonizing data for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:02 - Fitting models on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:02 - Fitting model for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:03 - Fitting model for response_var_1.
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 2.345402012863007e-18.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0452962015588918e-62.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/output.py:295: UserWarning: Process: 3367 - 2026-07-22 19:02:03 - Posterior estimation failed: 
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\output.py:342: UserWarning: Process: 34708 - 2026-10-15 16:52:24 - Posterior estimation failed: 
     Matrix is not positive definite. 
-
     The optimizer could not find a stable solution. Retrying optimization.
-
       warnings.warn(message, category)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 3.416128457233547e-18.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.161818075084269e-55.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.01776121710389e-18.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.204861832584378e-55.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.4551614365857112e-18.
-
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:697: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0207110394196985e-62.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/scipy/optimize/_numdiff.py:711: RuntimeWarning: overflow encountered in divide
-
-      df_dx = [delf / delx for delf, delx in zip(df, dx)]
-
-    Process: 3367 - 2026-07-22 19:02:03 - Saving model to:
-
-    	resources/cli_example/blr_cli/save_dir/folds/fold_3.
-
-    Process: 3367 - 2026-07-22 19:02:03 - Making predictions on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:03 - Computing z-scores for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:03 - Computing z-scores for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:03 - Computing z-scores for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:03 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:03 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:03 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:03 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:03 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:03 - Computing log-probabilities for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:03 - Computing log-probabilities for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:03 - Computing yhat for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:03 - Computing yhat for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:03 - Computing yhat for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:04 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 3367 - 2026-07-22 19:02:04 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:04 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:04 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:04 - Harmonizing data on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:04 - Harmonizing data for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:04 - Harmonizing data for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Making predictions on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Computing z-scores for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Computing z-scores for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Computing z-scores for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Computing log-probabilities for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Computing log-probabilities for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Computing yhat for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Computing yhat for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Computing yhat for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 3367 - 2026-07-22 19:02:05 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Harmonizing data on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Harmonizing data for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:05 - Harmonizing data for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:06 - Fitting models on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:06 - Fitting model for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:06 - Fitting model for response_var_1.
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.204862148507314e-55.
-
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/util/output.py:295: UserWarning: Process: 3367 - 2026-07-22 19:02:07 - Posterior estimation failed: 
-
-    Matrix is not positive definite. 
-
-    The optimizer could not find a stable solution. Retrying optimization.
-
-      warnings.warn(message, category)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.1618189276041684e-55.
-
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.204835921010135e-55.
-
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/regression_model/blr.py:630: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.204861445939724e-55.
-
-      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
-
-    Process: 3367 - 2026-07-22 19:02:07 - Saving model to:
-
-    	resources/cli_example/blr_cli/save_dir/folds/fold_4.
-
-    Process: 3367 - 2026-07-22 19:02:07 - Making predictions on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:07 - Computing z-scores for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:07 - Computing z-scores for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:07 - Computing z-scores for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:07 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:07 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:07 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:07 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:07 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:07 - Computing log-probabilities for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:07 - Computing log-probabilities for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:07 - Computing yhat for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:07 - Computing yhat for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:07 - Computing yhat for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:07 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 3367 - 2026-07-22 19:02:07 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:07 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:08 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:08 - Harmonizing data on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:08 - Harmonizing data for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:08 - Harmonizing data for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:08 - Making predictions on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:08 - Computing z-scores for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:08 - Computing z-scores for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:08 - Computing z-scores for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:08 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:08 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:08 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:08 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:08 - Computing log-probabilities for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:08 - Computing log-probabilities for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:08 - Computing log-probabilities for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:08 - Computing yhat for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:08 - Computing yhat for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:08 - Computing yhat for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:09 - Dataset "centile" created.
-
-        - 150 observations
-
-        - 150 unique subjects
-
-        - 1 covariates
-
-        - 2 response variables
-
-        - 2 batch effects:
-
-        	batch_effect_0 (1)
-
-    	batch_effect_1 (1)
-
-        
-
-    Process: 3367 - 2026-07-22 19:02:09 - Computing centiles for 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:09 - Computing centiles for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:09 - Computing centiles for response_var_0.
-
-    Process: 3367 - 2026-07-22 19:02:09 - Harmonizing data on 2 response variables.
-
-    Process: 3367 - 2026-07-22 19:02:09 - Harmonizing data for response_var_1.
-
-    Process: 3367 - 2026-07-22 19:02:09 - Harmonizing data for response_var_0.
-
-
+    
 
 You can find the results in the
 ``resources/cli_example/blr_cli/save_dir`` folder.
@@ -1024,7 +603,6 @@ You can find the results in the
     )
     a = pd.read_csv(results_path, index_col=0)
     display(a)
-    
 
 
 
@@ -1060,68 +638,68 @@ You can find the results in the
       <tbody>
         <tr>
           <th>EXPV</th>
-          <td>4.678718e-01</td>
-          <td>2.027784e-01</td>
+          <td>4.679810e-01</td>
+          <td>2.030427e-01</td>
         </tr>
         <tr>
           <th>Kurtosis</th>
-          <td>-1.804822e-01</td>
-          <td>-8.249590e-02</td>
+          <td>-1.876473e-01</td>
+          <td>-7.910999e-02</td>
         </tr>
         <tr>
           <th>MACE</th>
-          <td>1.615801e-01</td>
+          <td>1.646634e-01</td>
           <td>1.748506e-01</td>
         </tr>
         <tr>
           <th>MAPE</th>
-          <td>2.359962e-02</td>
-          <td>3.068768e-01</td>
+          <td>2.360966e-02</td>
+          <td>3.066030e-01</td>
         </tr>
         <tr>
           <th>MLL</th>
-          <td>1.128491e+00</td>
-          <td>8.335007e-01</td>
+          <td>1.128169e+00</td>
+          <td>8.333058e-01</td>
         </tr>
         <tr>
           <th>MSLL</th>
-          <td>-3.151540e-01</td>
-          <td>-8.652691e-01</td>
+          <td>-3.154758e-01</td>
+          <td>-8.654640e-01</td>
         </tr>
         <tr>
           <th>R2</th>
-          <td>4.678505e-01</td>
-          <td>2.008805e-01</td>
+          <td>4.679601e-01</td>
+          <td>2.011754e-01</td>
         </tr>
         <tr>
           <th>RMSE</th>
-          <td>7.323381e-02</td>
-          <td>9.002539e+02</td>
+          <td>7.322627e-02</td>
+          <td>9.000878e+02</td>
         </tr>
         <tr>
           <th>Rho</th>
-          <td>6.422068e-01</td>
-          <td>4.885517e-01</td>
+          <td>6.433635e-01</td>
+          <td>4.877740e-01</td>
         </tr>
         <tr>
           <th>Rho_p</th>
-          <td>1.691404e-21</td>
-          <td>9.164062e-12</td>
+          <td>1.359551e-21</td>
+          <td>9.994549e-12</td>
         </tr>
         <tr>
           <th>SMSE</th>
-          <td>5.321495e-01</td>
-          <td>7.991195e-01</td>
+          <td>5.320399e-01</td>
+          <td>7.988246e-01</td>
         </tr>
         <tr>
           <th>ShapiroW</th>
-          <td>9.839388e-01</td>
-          <td>9.563680e-01</td>
+          <td>9.841289e-01</td>
+          <td>9.565320e-01</td>
         </tr>
         <tr>
           <th>Skewness</th>
-          <td>-2.081598e-01</td>
-          <td>6.883883e-01</td>
+          <td>-2.071004e-01</td>
+          <td>6.880513e-01</td>
         </tr>
       </tbody>
     </table>
@@ -1150,6 +728,8 @@ HBR example
     tune = 500
     chains = 4
     nuts_sampler = "nutpie"
+    # The progress bar cannot be shown when the CLI runs from a notebook cell
+    progressbar = "False"
     
     likelihood = "Normal"
     linear_mu = "True"
@@ -1168,14 +748,14 @@ Constructing command
     args = f"-a {alg} -f {func} -c {cov} -r {resp} -t {t_resp} -e {t_cov}"
     kwargs = f"be={be} t_be={t_be}"
     normative_model_kwargs = f"save_dir={save_dir} savemodel={savemodel} saveresults={saveresults} basis_function={basis_function} inscaler={inscaler} outscaler={outscaler}"
-    hbr_kwargs = f"draws={draws} tune={tune} chains={chains} nuts_sampler={nuts_sampler} likelihood={likelihood} linear_mu={linear_mu} random_intercept_mu={random_intercept_mu} random_slope_mu={random_slope_mu} linear_sigma={linear_sigma} random_intercept_sigma={random_intercept_sigma} random_slope_sigma={random_slope_sigma}"
+    hbr_kwargs = f"draws={draws} tune={tune} chains={chains} nuts_sampler={nuts_sampler} progressbar={progressbar} likelihood={likelihood} linear_mu={linear_mu} random_intercept_mu={random_intercept_mu} random_slope_mu={random_slope_mu} linear_sigma={linear_sigma} random_intercept_sigma={random_intercept_sigma} random_slope_sigma={random_slope_sigma}"
     full_command = f"{command} {args} {kwargs} {normative_model_kwargs} {hbr_kwargs}"
     print(full_command)
 
 
 .. code:: text
 
-    normative -a hbr -f fit_predict -c /home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/covariates.csv -r /home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/responses.csv -t /home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/test_responses.csv -e /home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/test_covariates.csv be=/home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/batch_effects.csv t_be=/home/runner/work/PCNtoolkit/PCNtoolkit/resources/cli_example/data/test_batch_effects.csv save_dir=resources/cli_example/hbr/save_dir savemodel=True saveresults=True basis_function=bspline inscaler=standardize outscaler=standardize draws=1000 tune=500 chains=4 nuts_sampler=nutpie likelihood=Normal linear_mu=True random_intercept_mu=True random_slope_mu=False linear_sigma=True random_intercept_sigma=False random_slope_sigma=False
+    normative -a hbr -f fit_predict -c c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\covariates.csv -r c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\responses.csv -t c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\test_responses.csv -e c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\test_covariates.csv be=c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\batch_effects.csv t_be=c:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\examples\resources\cli_example\data\test_batch_effects.csv save_dir=resources\cli_example\hbr\save_dir savemodel=True saveresults=True basis_function=bspline inscaler=standardize outscaler=standardize draws=1000 tune=500 chains=4 nuts_sampler=nutpie progressbar=False likelihood=Normal linear_mu=True random_intercept_mu=True random_slope_mu=False linear_sigma=True random_intercept_sigma=False random_slope_sigma=False
     
 
 Running command
@@ -1188,1395 +768,150 @@ Running command
 
 .. code:: text
 
-    Process: 3381 - 2026-07-22 19:02:14 - No log directory specified. Using default log directory: /home/runner/.pcntoolkit/logs
-
-    Process: 3381 - 2026-07-22 19:02:14 - No temporary directory specified. Using default temporary directory: /home/runner/.pcntoolkit/temp
-
-    Process: 3381 - 2026-07-22 19:02:14 - Dataset "fit_data" created.
-
+    Process: 35260 - 2026-10-15 16:52:31 - No log directory specified. Using default log directory: C:\Users\kontsi/.pcntoolkit\logs
+    Process: 35260 - 2026-10-15 16:52:31 - No temporary directory specified. Using default temporary directory: C:\Users\kontsi/.pcntoolkit\temp
+    Process: 35260 - 2026-10-15 16:52:31 - Dataset "fit_data" created.
         - 862 observations
-
         - 862 unique subjects
-
         - 1 covariates
-
         - 2 response variables
-
         - 2 batch effects:
-
         	batch_effect_0 (2)
-
     	batch_effect_1 (23)
-
         
-
-    Process: 3381 - 2026-07-22 19:02:14 - Dataset "predict_data" created.
-
+    Process: 35260 - 2026-10-15 16:52:31 - Dataset "predict_data" created.
         - 216 observations
-
         - 216 unique subjects
-
         - 1 covariates
-
         - 2 response variables
-
         - 2 batch effects:
-
         	batch_effect_0 (2)
-
     	batch_effect_1 (23)
-
         
-
-    Process: 3381 - 2026-07-22 19:02:14 - Task ID created: fit_predict_fit_data__2026-07-22_19:02:14_641.998535
-
-    Process: 3381 - 2026-07-22 19:02:14 - Temporary directory created:
-
-    	/home/runner/.pcntoolkit/temp/fit_predict_fit_data__2026-07-22_19:02:14_641.998535
-
-    Process: 3381 - 2026-07-22 19:02:14 - Log directory created:
-
-    	/home/runner/.pcntoolkit/logs/fit_predict_fit_data__2026-07-22_19:02:14_641.998535
-
-    Process: 3381 - 2026-07-22 19:02:14 - Fitting models on 2 response variables.
-
-    Process: 3381 - 2026-07-22 19:02:14 - Fitting model for response_var_0.
-
-    /opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/pytensor/link/c/cmodule.py:2986: UserWarning: PyTensor could not link to a BLAS installation. Operations that might benefit from BLAS will be severely degraded.
-
-    This usually happens when PyTensor is installed via pip. We recommend it be installed via conda/mamba/pixi instead.
-
-    Alternatively, you can use an experimental backend such as Numba or JAX that perform their own BLAS optimizations, by setting `pytensor.config.mode == 'NUMBA'` or passing `mode='NUMBA'` when compiling a PyTensor function.
-
-    For more options and details see https://pytensor.readthedocs.io/en/latest/troubleshooting.html#how-do-i-configure-test-my-blas-library
-
-      warnings.warn(
-
-    [2K[1A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-    [2K[3A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-    [2K[3A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-    [2K[4A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-    [2K[5A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━                                  [0m   54         0            0.29        31           0s         3s        
-
-    [2K[6A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━                                  [0m   54         0            0.29        31           0s         3s        
-
-    [2K[7A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━                                  [0m   54         0            0.29        31           0s         3s        
-
-      [34m━╸                                 [0m   64         0            0.08        3            0s         2s        
-
-    [2K[8A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━                                  [0m   54         0            0.29        31           0s         3s        
-
-      [34m━╸                                 [0m   64         0            0.08        3            0s         2s        
-
-    [2K[9A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━                                  [0m   54         0            0.29        31           0s         3s        
-
-      [34m━╸                                 [0m   64         0            0.08        3            0s         2s        
-
-      [34m━                                  [0m   30         0            0.08        15           0s         5s        
-
-    [2K[10A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━                                  [0m   54         0            0.29        31           0s         3s        
-
-      [34m━╸                                 [0m   64         0            0.08        3            0s         2s        
-
-      [34m━                                  [0m   30         0            0.08        15           0s         5s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━╸                                [0m   111        0            0.29        31           0s         3s        
-
-      [34m━╸                                 [0m   64         0            0.08        3            0s         2s        
-
-      [34m━                                  [0m   30         0            0.08        15           0s         5s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━╸                                [0m   111        0            0.15        15           0s         3s        
-
-      [34m━╸                                 [0m   64         0            0.08        3            0s         2s        
-
-      [34m━                                  [0m   30         0            0.08        15           0s         5s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━╸                                [0m   111        0            0.15        15           0s         3s        
-
-      [34m━━━╸                               [0m   153        0            0.08        3            0s         2s        
-
-      [34m━                                  [0m   30         0            0.08        15           0s         5s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━╸                                [0m   111        0            0.15        15           0s         3s        
-
-      [34m━━━╸                               [0m   153        0            0.23        15           0s         2s        
-
-      [34m━                                  [0m   30         0            0.08        15           0s         5s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━╸                                [0m   111        0            0.15        15           0s         3s        
-
-      [34m━━━╸                               [0m   153        0            0.23        15           0s         2s        
-
-      [34m━━╸                                [0m   111        0            0.08        15           0s         3s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━╸                                [0m   111        0            0.15        15           0s         3s        
-
-      [34m━━━╸                               [0m   153        0            0.23        15           0s         2s        
-
-      [34m━━╸                                [0m   111        0            0.35        15           0s         3s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━╸                                [0m   111        0            0.15        15           0s         3s        
-
-      [34m━━━╸                               [0m   153        0            0.23        15           0s         2s        
-
-      [34m━━╸                                [0m   111        0            0.35        15           0s         3s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━╸                                [0m   111        0            0.15        15           0s         3s        
-
-      [34m━━━╸                               [0m   153        0            0.23        15           0s         2s        
-
-      [34m━━╸                                [0m   111        0            0.35        15           0s         3s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━                              [0m   200        0            0.15        15           0s         2s        
-
-      [34m━━━╸                               [0m   153        0            0.23        15           0s         2s        
-
-      [34m━━╸                                [0m   111        0            0.35        15           0s         3s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━                              [0m   200        0            0.50        7            0s         2s        
-
-      [34m━━━╸                               [0m   153        0            0.23        15           0s         2s        
-
-      [34m━━╸                                [0m   111        0            0.35        15           0s         3s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━                              [0m   200        0            0.50        7            0s         2s        
-
-      [34m━━━━━╸                             [0m   240        0            0.23        15           0s         2s        
-
-      [34m━━╸                                [0m   111        0            0.35        15           0s         3s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━                              [0m   200        0            0.50        7            0s         2s        
-
-      [34m━━━━━╸                             [0m   240        0            0.39        15           0s         2s        
-
-      [34m━━╸                                [0m   111        0            0.35        15           0s         3s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━                              [0m   200        0            0.50        7            0s         2s        
-
-      [34m━━━━━╸                             [0m   240        0            0.39        15           0s         2s        
-
-      [34m━━━━╸                              [0m   193        0            0.35        15           0s         3s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━                              [0m   200        0            0.50        7            0s         2s        
-
-      [34m━━━━━╸                             [0m   240        0            0.39        15           0s         2s        
-
-      [34m━━━━╸                              [0m   193        0            0.18        31           0s         3s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━━                             [0m   269        0            0.50        7            0s         2s        
-
-      [34m━━━━━╸                             [0m   240        0            0.39        15           0s         2s        
-
-      [34m━━━━╸                              [0m   193        0            0.18        31           0s         3s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━━                             [0m   269        0            0.22        31           0s         2s        
-
-      [34m━━━━━╸                             [0m   240        0            0.39        15           0s         2s        
-
-      [34m━━━━╸                              [0m   193        0            0.18        31           0s         3s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━━━━                           [0m   354        0            0.22        31           1s         2s        
-
-      [34m━━━━━━━                            [0m   305        0            0.40        15           0s         2s        
-
-      [34m━━━━━━╸                            [0m   277        0            0.36        15           0s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━━━━                           [0m   354        0            0.32        7            1s         2s        
-
-      [34m━━━━━━━                            [0m   305        0            0.40        15           0s         2s        
-
-      [34m━━━━━━╸                            [0m   277        0            0.36        15           0s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━━━━━━╸                        [0m   449        0            0.32        7            1s         2s        
-
-      [34m━━━━━━━━━                          [0m   375        0            0.22        31           1s         2s        
-
-      [34m━━━━━━━━╸                          [0m   368        0            0.36        15           1s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━━━━━━╸                        [0m   449        0            0.34        7            1s         2s        
-
-      [34m━━━━━━━━━                          [0m   375        0            0.22        31           1s         2s        
-
-      [34m━━━━━━━━╸                          [0m   368        0            0.36        15           1s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━                      [0m   546        0            0.34        7            1s         1s        
-
-      [34m━━━━━━━━━━                         [0m   438        0            0.33        15           1s         1s        
-
-      [34m━━━━━━━━━━╸                        [0m   445        0            0.27        31           1s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━                      [0m   546        1            0.36        15           1s         1s        
-
-      [34m━━━━━━━━━━                         [0m   438        0            0.33        15           1s         1s        
-
-      [34m━━━━━━━━━━╸                        [0m   445        0            0.27        31           1s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━                    [0m   639        1            0.36        15           1s         1s        
-
-      [34m━━━━━━━━━━━━                       [0m   521        0            0.26        15           1s         1s        
-
-      [34m━━━━━━━━━━━━                       [0m   525        0            0.29        31           1s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━                    [0m   639        2            0.35        15           1s         1s        
-
-      [34m━━━━━━━━━━━━                       [0m   521        0            0.26        15           1s         1s        
-
-      [34m━━━━━━━━━━━━                       [0m   525        0            0.29        31           1s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━                  [0m   722        2            0.35        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━                     [0m   610        5            0.28        15           1s         1s        
-
-      [34m━━━━━━━━━━━━━━                     [0m   610        0            0.32        31           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━                  [0m   722        2            0.34        63           1s         1s        
-
-      [31m━━━━━━━━━━━━━━                     [0m   610        5            0.28        15           1s         1s        
-
-      [34m━━━━━━━━━━━━━━                     [0m   610        0            0.32        31           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━                [0m   808        2            0.34        63           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━                   [0m   697        10           0.23        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━                   [0m   693        1            0.31        15           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━                [0m   808        3            0.34        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━                   [0m   697        10           0.23        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━                   [0m   693        1            0.31        15           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━              [0m   899        3            0.34        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━                 [0m   771        10           0.28        63           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━                 [0m   779        2            0.32        31           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━              [0m   899        3            0.37        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━                 [0m   771        10           0.28        63           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━                 [0m   779        2            0.32        31           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━            [0m   991        3            0.37        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━               [0m   854        11           0.27        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━               [0m   866        2            0.31        7            1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━            [0m   991        3            0.38        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━               [0m   854        11           0.27        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━               [0m   866        2            0.31        7            1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━          [0m   1077       3            0.38        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━             [0m   936        11           0.27        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━             [0m   950        3            0.29        15           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━          [0m   1077       3            0.33        7            1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━             [0m   936        11           0.27        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━             [0m   950        3            0.29        15           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━╸       [0m   1175       3            0.33        7            1s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━╸           [0m   1005       12           0.28        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━╸          [0m   1043       5            0.31        15           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━╸       [0m   1175       5            0.34        15           1s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━╸           [0m   1005       12           0.28        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━╸          [0m   1043       5            0.31        15           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸     [0m   1263       5            0.34        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━╸         [0m   1096       16           0.23        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━         [0m   1124       6            0.31        15           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸     [0m   1263       5            0.34        23           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━╸         [0m   1096       16           0.23        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━         [0m   1124       6            0.31        15           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸   [0m   1352       5            0.34        23           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━       [0m   1186       17           0.25        31           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━       [0m   1213       10           0.32        15           2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸   [0m   1352       5            0.37        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━       [0m   1186       17           0.25        31           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━       [0m   1213       10           0.32        15           2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸ [0m   1434       5            0.37        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸     [0m   1268       18           0.25        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━     [0m   1295       10           0.31        15           2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸ [0m   1434       5            0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸     [0m   1268       18           0.25        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━     [0m   1295       10           0.31        15           2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       5            0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸   [0m   1347       20           0.27        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸  [0m   1387       14           0.31        3            2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       5            0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸   [0m   1347       20           0.27        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸  [0m   1387       14           0.31        3            2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       5            0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸ [0m   1433       20           0.27        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸  [0m   1387       14           0.31        3            2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       5            0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       22           0.26        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ [0m   1464       15           0.28        15           2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       5            0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       22           0.26        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ [0m   1464       15           0.28        15           2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       5            0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       22           0.26        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       15           0.28        15           2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       5            0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       22           0.26        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       15           0.28        15           2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       5            0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       22           0.26        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       15           0.28        15           2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       5            0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       22           0.26        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       15           0.28        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       11           0.30        23           2s         0s                                                          Process: 3381 - 2026-07-22 19:02:32 - Fitting model for response_var_1.
-
-    [2K[1A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-    [2K[3A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-    [2K[3A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-    [2K[4A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-    [2K[5A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━╸                                 [0m   64         0            0.51        15           0s         2s        
-
-    [2K[6A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━╸                                 [0m   64         0            0.51        15           0s         2s        
-
-    [2K[7A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━╸                                 [0m   64         0            0.51        15           0s         2s        
-
-      [34m━                                  [0m   46         0            0.92        15           0s         3s        
-
-    [2K[8A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━╸                                 [0m   64         0            0.51        15           0s         2s        
-
-      [34m━                                  [0m   46         0            0.92        15           0s         3s        
-
-    [2K[9A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━╸                                 [0m   64         0            0.51        15           0s         2s        
-
-      [34m━                                  [0m   46         0            0.92        15           0s         3s        
-
-      [34m━                                  [0m   55         0            0.47        15           0s         3s        
-
-    [2K[10A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━╸                                 [0m   64         0            0.51        15           0s         2s        
-
-      [34m━                                  [0m   46         0            0.92        15           0s         3s        
-
-      [34m━                                  [0m   55         0            0.47        15           0s         3s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━╸                               [0m   146        0            0.51        15           0s         2s        
-
-      [34m━                                  [0m   46         0            0.92        15           0s         3s        
-
-      [34m━                                  [0m   55         0            0.47        15           0s         3s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━╸                               [0m   146        0            0.38        7            0s         2s        
-
-      [34m━                                  [0m   46         0            0.92        15           0s         3s        
-
-      [34m━                                  [0m   55         0            0.47        15           0s         3s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━╸                               [0m   146        0            0.38        7            0s         2s        
-
-      [34m━━╸                                [0m   102        0            0.92        15           0s         3s        
-
-      [34m━                                  [0m   55         0            0.47        15           0s         3s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━╸                               [0m   146        0            0.38        7            0s         2s        
-
-      [34m━━╸                                [0m   102        0            0.22        15           0s         3s        
-
-      [34m━                                  [0m   55         0            0.47        15           0s         3s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━╸                               [0m   146        0            0.38        7            0s         2s        
-
-      [34m━━╸                                [0m   102        0            0.22        15           0s         3s        
-
-      [34m━━━                                [0m   141        0            0.47        15           0s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━╸                               [0m   146        0            0.38        7            0s         2s        
-
-      [34m━━╸                                [0m   102        0            0.22        15           0s         3s        
-
-      [34m━━━                                [0m   141        0            0.22        7            0s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━╸                               [0m   146        0            0.38        7            0s         2s        
-
-      [34m━━╸                                [0m   102        0            0.22        15           0s         3s        
-
-      [34m━━━                                [0m   141        0            0.22        7            0s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━╸                               [0m   146        0            0.38        7            0s         2s        
-
-      [34m━━╸                                [0m   102        0            0.22        15           0s         3s        
-
-      [34m━━━                                [0m   141        0            0.22        7            0s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━╸                             [0m   233        0            0.38        7            0s         2s        
-
-      [34m━━╸                                [0m   102        0            0.22        15           0s         3s        
-
-      [34m━━━                                [0m   141        0            0.22        7            0s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━╸                             [0m   233        0            0.43        7            0s         2s        
-
-      [34m━━╸                                [0m   102        0            0.22        15           0s         3s        
-
-      [34m━━━                                [0m   141        0            0.22        7            0s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━╸                             [0m   233        0            0.43        7            0s         2s        
-
-      [34m━━━━╸                              [0m   199        0            0.22        15           0s         2s        
-
-      [34m━━━                                [0m   141        0            0.22        7            0s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━╸                             [0m   233        0            0.43        7            0s         2s        
-
-      [34m━━━━╸                              [0m   199        0            0.33        15           0s         2s        
-
-      [34m━━━                                [0m   141        0            0.22        7            0s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━╸                             [0m   233        0            0.43        7            0s         2s        
-
-      [34m━━━━╸                              [0m   199        0            0.33        15           0s         2s        
-
-      [34m━━━━━                              [0m   226        0            0.22        7            0s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━╸                             [0m   233        0            0.43        7            0s         2s        
-
-      [34m━━━━╸                              [0m   199        0            0.33        15           0s         2s        
-
-      [34m━━━━━                              [0m   226        0            0.36        15           0s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━━━╸                           [0m   328        0            0.43        7            0s         2s        
-
-      [34m━━━━╸                              [0m   199        0            0.33        15           0s         2s        
-
-      [34m━━━━━                              [0m   226        0            0.36        15           0s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━━━╸                           [0m   328        0            0.24        15           0s         2s        
-
-      [34m━━━━╸                              [0m   199        0            0.33        15           0s         2s        
-
-      [34m━━━━━                              [0m   226        0            0.36        15           0s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━━━━━━                         [0m   422        0            0.24        15           1s         1s        
-
-      [34m━━━━━━━                            [0m   286        0            0.38        15           0s         2s        
-
-      [34m━━━━━━━╸                           [0m   320        0            0.35        15           0s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━━━━━━                         [0m   422        0            0.22        36           1s         1s        
-
-      [34m━━━━━━━                            [0m   286        0            0.38        15           0s         2s        
-
-      [34m━━━━━━━╸                           [0m   320        0            0.35        15           0s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━━━━━━━━                       [0m   510        0            0.22        36           1s         1s        
-
-      [34m━━━━━━━━━                          [0m   383        0            0.38        15           1s         2s        
-
-      [34m━━━━━━━━━╸                         [0m   406        0            0.36        15           1s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [34m━━━━━━━━━━━━                       [0m   510        0            0.33        15           1s         1s        
-
-      [34m━━━━━━━━━                          [0m   383        0            0.38        15           1s         2s        
-
-      [34m━━━━━━━━━╸                         [0m   406        0            0.36        15           1s         2s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━                     [0m   613        0            0.33        15           1s         1s        
-
-      [34m━━━━━━━━━━━                        [0m   468        0            0.29        15           1s         2s        
-
-      [34m━━━━━━━━━━━╸                       [0m   486        0            0.35        15           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━                     [0m   613        7            0.35        15           1s         1s        
-
-      [34m━━━━━━━━━━━                        [0m   468        0            0.29        15           1s         2s        
-
-      [34m━━━━━━━━━━━╸                       [0m   486        0            0.35        15           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━                  [0m   718        7            0.35        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━                      [0m   563        1            0.38        31           1s         1s        
-
-      [31m━━━━━━━━━━━━━╸                     [0m   580        2            0.30        15           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━                  [0m   718        13           0.32        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━                      [0m   563        1            0.38        31           1s         1s        
-
-      [31m━━━━━━━━━━━━━╸                     [0m   580        2            0.30        15           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━╸               [0m   835        13           0.32        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━╸                   [0m   665        11           0.32        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━                   [0m   676        4            0.31        15           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━╸               [0m   835        40           0.32        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━╸                   [0m   665        11           0.32        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━                   [0m   676        4            0.31        15           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━             [0m   934        40           0.32        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━                 [0m   763        15           0.37        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━╸                [0m   793        33           0.29        7            1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━             [0m   934        42           0.30        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━                 [0m   763        15           0.37        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━╸                [0m   793        33           0.29        7            1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━           [0m   1019       42           0.30        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━               [0m   852        18           0.38        31           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━              [0m   897        38           0.27        15           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━           [0m   1019       44           0.35        31           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━               [0m   852        18           0.38        31           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━              [0m   897        38           0.27        15           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━         [0m   1106       44           0.35        31           1s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━             [0m   949        21           0.38        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━            [0m   984        40           0.29        7            1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━         [0m   1106       47           0.35        31           1s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━             [0m   949        21           0.38        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━            [0m   984        40           0.29        7            1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━       [0m   1208       47           0.35        31           1s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━           [0m   1041       22           0.33        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━          [0m   1081       44           0.31        15           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━       [0m   1208       54           0.34        15           1s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━           [0m   1041       22           0.33        15           1s         1s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━          [0m   1081       44           0.31        15           1s         1s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸    [0m   1303       54           0.34        15           1s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━╸        [0m   1139       31           0.37        15           1s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━        [0m   1160       46           0.27        15           1s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸    [0m   1303       57           0.30        15           1s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━╸        [0m   1139       31           0.37        15           1s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━        [0m   1160       46           0.27        15           1s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸  [0m   1399       57           0.30        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸      [0m   1227       43           0.34        3            1s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸     [0m   1260       60           0.31        15           1s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸  [0m   1399       59           0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸      [0m   1227       43           0.34        3            1s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸     [0m   1260       60           0.31        15           1s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       59           0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━    [0m   1325       52           0.39        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸   [0m   1354       66           0.32        15           2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       59           0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━    [0m   1325       52           0.39        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸   [0m   1354       66           0.32        15           2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       59           0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━    [0m   1325       52           0.39        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸   [0m   1354       66           0.32        15           2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       59           0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━    [0m   1325       52           0.39        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸   [0m   1354       66           0.32        15           2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       59           0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       71           0.38        7            2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ [0m   1455       71           0.30        15           2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       59           0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       71           0.38        7            2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ [0m   1455       71           0.30        15           2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       59           0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       71           0.38        7            2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       71           0.30        15           2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       59           0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       71           0.38        7            2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       71           0.30        15           2s         0s        
-
-    [2K[11A[1m  Progress                              Draws      Divergences  Step size   Grad evals   Elapsed    Remaining [0m
-
-     ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       59           0.33        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       71           0.38        7            2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       71           0.30        15           2s         0s        
-
-      [31m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m   1500       44           0.35        17           2s         0s                                                          Process: 3381 - 2026-07-22 19:02:40 - Saving model to:
-
-    	resources/cli_example/hbr/save_dir.
-
-    Process: 3381 - 2026-07-22 19:02:41 - Making predictions on 2 response variables.
-
-    Process: 3381 - 2026-07-22 19:02:41 - Computing z-scores for 2 response variables.
-
-    Process: 3381 - 2026-07-22 19:02:41 - Computing z-scores for response_var_1.
-
-    Sampling: []
-
-    Process: 3381 - 2026-07-22 19:02:43 - Computing z-scores for response_var_0.
-
-    Sampling: []
-
-    Process: 3381 - 2026-07-22 19:02:44 - Computing centiles for 2 response variables.
-
-    Process: 3381 - 2026-07-22 19:02:44 - Computing centiles for response_var_1.
-
-    Sampling: []
-
-    Sampling: []
-
-    Sampling: []
-
-    Sampling: []
-
-    Sampling: []
-
-    Process: 3381 - 2026-07-22 19:02:46 - Computing centiles for response_var_0.
-
-    Sampling: []
-
-    Sampling: []
-
-    Sampling: []
-
-    Sampling: []
-
-    Sampling: []
-
-    Process: 3381 - 2026-07-22 19:02:48 - Computing log-probabilities for 2 response variables.
-
-    Process: 3381 - 2026-07-22 19:02:48 - Computing log-probabilities for 2 response variables.
-
-    Process: 3381 - 2026-07-22 19:02:48 - Computing log-probabilities for response_var_1.
-
-    Process: 3381 - 2026-07-22 19:02:50 - Computing log-probabilities for response_var_0.
-
-    Process: 3381 - 2026-07-22 19:02:51 - Computing yhat for 2 response variables.
-
-    Sampling: []
-
-    Sampling: []
-
-    Process: 3381 - 2026-07-22 19:02:52 - Dataset "centile" created.
-
+    Process: 35260 - 2026-10-15 16:52:31 - Task ID created: fit_predict_fit_data__2026-10-15_16-52-31_272.066895
+    Process: 35260 - 2026-10-15 16:52:31 - Temporary directory created:
+    	C:\Users\kontsi/.pcntoolkit\temp\fit_predict_fit_data__2026-10-15_16-52-31_272.066895
+    Process: 35260 - 2026-10-15 16:52:31 - Log directory created:
+    	C:\Users\kontsi/.pcntoolkit\logs\fit_predict_fit_data__2026-10-15_16-52-31_272.066895
+    Process: 35260 - 2026-10-15 16:52:31 - Fitting models on 2 response variables.
+    Process: 35260 - 2026-10-15 16:52:31 - Fitting model for response_var_0.
+    Process: 35260 - 2026-10-15 16:52:51 - Fitting model for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:02 - Saving model to:
+    	resources\cli_example\hbr\save_dir.
+    Process: 35260 - 2026-10-15 16:53:04 - Making predictions on 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:04 - Computing z-scores for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:04 - Computing z-scores for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:05 - Computing z-scores for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:05 - Computing centiles for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:05 - Computing centiles for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:08 - Computing centiles for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:10 - Computing log-probabilities for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:10 - Computing log-probabilities for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:10 - Computing log-probabilities for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:12 - Computing log-probabilities for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:12 - Computing yhat for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:14 - Dataset "centile" created.
         - 150 observations
-
         - 150 unique subjects
-
         - 1 covariates
-
         - 2 response variables
-
         - 2 batch effects:
-
         	batch_effect_0 (1)
-
     	batch_effect_1 (1)
-
         
-
-    Process: 3381 - 2026-07-22 19:02:52 - Computing centiles for 2 response variables.
-
-    Process: 3381 - 2026-07-22 19:02:52 - Computing centiles for response_var_1.
-
-    Sampling: []
-
-    Sampling: []
-
-    Sampling: []
-
-    Sampling: []
-
-    Sampling: []
-
-    Process: 3381 - 2026-07-22 19:02:54 - Computing centiles for response_var_0.
-
-    Sampling: []
-
-    Sampling: []
-
-    Sampling: []
-
-    Sampling: []
-
-    Sampling: []
-
-    Process: 3381 - 2026-07-22 19:02:56 - Harmonizing data on 2 response variables.
-
-    Process: 3381 - 2026-07-22 19:02:56 - Harmonizing data for response_var_1.
-
-    Sampling: []
-
-    Sampling: []
-
-    Process: 3381 - 2026-07-22 19:02:57 - Harmonizing data for response_var_0.
-
-    Sampling: []
-
-    Sampling: []
-
-    Process: 3381 - 2026-07-22 19:02:59 - Making predictions on 2 response variables.
-
-    Process: 3381 - 2026-07-22 19:02:59 - Computing z-scores for 2 response variables.
-
-    Process: 3381 - 2026-07-22 19:02:59 - Computing z-scores for response_var_1.
-
-    Sampling: []
-
-    Process: 3381 - 2026-07-22 19:02:59 - Computing z-scores for response_var_0.
-
-    Sampling: []
-
-    Process: 3381 - 2026-07-22 19:03:00 - Computing centiles for 2 response variables.
-
-    Process: 3381 - 2026-07-22 19:03:00 - Computing centiles for response_var_1.
-
-    Sampling: []
-
-    Sampling: []
-
-    Sampling: []
-
-    Sampling: []
-
-    Sampling: []
-
-    Process: 3381 - 2026-07-22 19:03:02 - Computing centiles for response_var_0.
-
-    Sampling: []
-
-    Sampling: []
-
-    Sampling: []
-
-    Sampling: []
-
-    Sampling: []
-
-    Process: 3381 - 2026-07-22 19:03:03 - Computing log-probabilities for 2 response variables.
-
-    Process: 3381 - 2026-07-22 19:03:03 - Computing log-probabilities for 2 response variables.
-
-    Process: 3381 - 2026-07-22 19:03:03 - Computing log-probabilities for response_var_1.
-
-    Process: 3381 - 2026-07-22 19:03:04 - Computing log-probabilities for response_var_0.
-
-    Process: 3381 - 2026-07-22 19:03:04 - Computing yhat for 2 response variables.
-
-    Sampling: []
-
-    Sampling: []
-
-    Process: 3381 - 2026-07-22 19:03:06 - Dataset "centile" created.
-
+    Process: 35260 - 2026-10-15 16:53:14 - Computing centiles for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:14 - Computing centiles for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:16 - Computing centiles for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:19 - Harmonizing data on 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:19 - Harmonizing data for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:20 - Harmonizing data for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:22 - Making predictions on 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:22 - Computing z-scores for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:22 - Computing z-scores for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:22 - Computing z-scores for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:23 - Computing centiles for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:23 - Computing centiles for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:25 - Computing centiles for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:27 - Computing log-probabilities for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:27 - Computing log-probabilities for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:27 - Computing log-probabilities for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:27 - Computing log-probabilities for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:27 - Computing yhat for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:29 - Dataset "centile" created.
         - 150 observations
-
         - 150 unique subjects
-
         - 1 covariates
-
         - 2 response variables
-
         - 2 batch effects:
-
         	batch_effect_0 (1)
-
     	batch_effect_1 (1)
-
         
+    Process: 35260 - 2026-10-15 16:53:29 - Computing centiles for 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:29 - Computing centiles for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:31 - Computing centiles for response_var_1.
+    Process: 35260 - 2026-10-15 16:53:33 - Harmonizing data on 2 response variables.
+    Process: 35260 - 2026-10-15 16:53:33 - Harmonizing data for response_var_0.
+    Process: 35260 - 2026-10-15 16:53:34 - Harmonizing data for response_var_1.
+    
 
-    Process: 3381 - 2026-07-22 19:03:06 - Computing centiles for 2 response variables.
+.. code:: text
 
-    Process: 3381 - 2026-07-22 19:03:06 - Computing centiles for response_var_1.
-
+    NUTS[nutpie]: [slope_mu, mu_intercept_mu, batch_effect_0_sigma_intercept_mu, normalized_batch_effect_0_offset_intercept_mu, batch_effect_1_sigma_intercept_mu, normalized_batch_effect_1_offset_intercept_mu, slope_sigma, intercept_sigma]
+    NUTS[nutpie]: [slope_mu, mu_intercept_mu, batch_effect_0_sigma_intercept_mu, normalized_batch_effect_0_offset_intercept_mu, batch_effect_1_sigma_intercept_mu, normalized_batch_effect_1_offset_intercept_mu, slope_sigma, intercept_sigma]
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
-    Process: 3381 - 2026-07-22 19:03:07 - Computing centiles for response_var_0.
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
     Sampling: []
-
-    Process: 3381 - 2026-07-22 19:03:09 - Harmonizing data on 2 response variables.
-
-    Process: 3381 - 2026-07-22 19:03:09 - Harmonizing data for response_var_1.
-
     Sampling: []
-
     Sampling: []
-
-    Process: 3381 - 2026-07-22 19:03:10 - Harmonizing data for response_var_0.
-
     Sampling: []
-
     Sampling: []
-
-
-
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    
