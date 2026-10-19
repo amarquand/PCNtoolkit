@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from os import PathLike
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 import pandas as pd
@@ -71,16 +71,19 @@ class LongitudinalScore(ABC):
         scores: xr.DataArray,
         save_path: str | PathLike[str],
     ) -> None:
-        """Write subject-level scores as a wide CSV table."""
+        """Write subject-level scores as a wide CSV table.
+        
+        The output looks like:
+        subjects,lh_thickness,rh_thickness
+        sub-01,0.42,-1.10
+        sub-02,-0.35,0.87
+        sub-03,2.13,1.95
+        """
         path = Path(save_path)
         path.parent.mkdir(parents=True, exist_ok=True)
-        score_name = scores.name or "score"
-        wide = scores.to_dataframe(name=score_name).unstack("response_vars")
-        if isinstance(wide.columns, pd.MultiIndex):
-            wide.columns = wide.columns.droplevel(0)
-        wide = wide.reset_index()
-        if "subjects" in wide.columns:
-            wide = wide.rename(columns={"subjects": "subject_id"})
+        # Convert a DataArray to a wide-format DataFrame.
+        wide = cast(pd.DataFrame, scores.to_pandas()).reset_index()
+        # Save as csv
         wide.to_csv(path, index=False)
 
     @staticmethod
@@ -88,9 +91,10 @@ class LongitudinalScore(ABC):
         frame: pd.DataFrame,
         save_path: str | PathLike[str],
     ) -> None:
-        """Write a DataFrame to CSV, creating parent folders if needed."""
+        """Write a DataFrame to CSV. Used for saving thriveline dataframes."""
         path = Path(save_path)
         path.parent.mkdir(parents=True, exist_ok=True)
+        # Save as csv
         frame.to_csv(path, index=False)
 
     @staticmethod
