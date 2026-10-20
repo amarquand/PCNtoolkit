@@ -73,7 +73,6 @@ first. Linear dependencies between columns are not removed automatically.
     pd.options.mode.chained_assignment = None  # default='warn'
     pcntoolkit.util.output.Output.set_show_messages(False)
 
-
 .. code:: ipython3
 
     save_path = os.path.join("pcntoolkit_resources", "data")
@@ -95,15 +94,21 @@ first. Linear dependencies between columns are not removed automatically.
     batch_effects = ["sex", "site"]
     response_vars = ["CortexVol"]
     
-    data = NormData.from_dataframe("fcon1000", data, covariates, batch_effects, response_vars)
+    data = NormData.from_dataframe(
+        "fcon1000", data, covariates, batch_effects, response_vars
+    )
     train, test = data.train_test_split()
 
 .. code:: ipython3
 
-    CompositeBasisFunction(
-            (BsplineBasisFunction(basis_column=0, degree=3, nknots=5), BsplineBasisFunction(basis_column=1, degree=3, nknots=5))
+    (
+        CompositeBasisFunction(
+            (
+                BsplineBasisFunction(basis_column=0, degree=3, nknots=5),
+                BsplineBasisFunction(basis_column=1, degree=3, nknots=5),
+            )
         ),
-
+    )
 
 
 
@@ -122,17 +127,19 @@ first. Linear dependencies between columns are not removed automatically.
         # The slope coefficients are assumed to be normally distributed, with a mean of 0 and a standard deviation of 10.
         slope=make_prior(dist_name="Normal", dist_params=(0.0, 5.0)),
         # The intercept is random, because we expect the intercept to vary between sites and sexes.
-    
         intercept=make_prior(
             random=True,
             # Mu is the mean of the intercept, which is normally distributed with a mean of 0 and a standard deviation of 1.
             mu=make_prior(dist_name="Normal", dist_params=(0.0, 1.0)),
             # Sigma is the scale at which the intercepts vary. It is a positive parameter, so we have to map it to the positive domain.
-            sigma=make_prior(dist_name="Gamma", dist_params=(1.0, 1.0))
+            sigma=make_prior(dist_name="Gamma", dist_params=(1.0, 1.0)),
         ),
-            # We use a B-spline basis function to allow for non-linearity in the mean.
+        # We use a B-spline basis function to allow for non-linearity in the mean.
         basis_function=CompositeBasisFunction(
-            (BsplineBasisFunction(basis_column=0, degree=3, nknots=5), BsplineBasisFunction(basis_column=1, degree=3, nknots=5))
+            (
+                BsplineBasisFunction(basis_column=0, degree=3, nknots=5),
+                BsplineBasisFunction(basis_column=1, degree=3, nknots=5),
+            )
         ),
     )
     sigma = make_prior(
@@ -1144,7 +1151,10 @@ first. Linear dependencies between columns are not removed automatically.
         covariate="age",
         response_vars=["CortexVol"],
         scatter_data=data,
-        covariate_ranges={"age": [20, 100], "EstimatedTotalIntraCranialVol": [0.75e6, 1.5e6]},
+        covariate_ranges={
+            "age": [20, 100],
+            "EstimatedTotalIntraCranialVol": [0.75e6, 1.5e6],
+        },
         batch_effects="all",
         show_legend=False,
         plt_kwargs={"figsize": (4, 3)},
@@ -1164,7 +1174,10 @@ first. Linear dependencies between columns are not removed automatically.
         covariate="age",
         response_vars=["CortexVol"],
         scatter_data=data,
-        covariate_ranges={"age": [20, 100], "EstimatedTotalIntraCranialVol": [1.5e6, 2.0e6]},
+        covariate_ranges={
+            "age": [20, 100],
+            "EstimatedTotalIntraCranialVol": [1.5e6, 2.0e6],
+        },
         batch_effects="all",
         show_legend=False,
         plt_kwargs={"figsize": (4, 3)},
@@ -1179,7 +1192,6 @@ first. Linear dependencies between columns are not removed automatically.
         show_legend=False,
         plt_kwargs={"figsize": (4, 3)},
     )
-
 
 
 
@@ -1213,7 +1225,10 @@ first. Linear dependencies between columns are not removed automatically.
         covariate="EstimatedTotalIntraCranialVol",
         response_vars=["CortexVol"],
         scatter_data=data,
-        covariate_ranges={"age": [20, 100], "EstimatedTotalIntraCranialVol": [0.75e6, 1.5e6]},
+        covariate_ranges={
+            "age": [20, 100],
+            "EstimatedTotalIntraCranialVol": [0.75e6, 1.5e6],
+        },
         batch_effects="all",
         show_legend=False,
         plt_kwargs={"figsize": (4, 3)},
@@ -1233,7 +1248,10 @@ first. Linear dependencies between columns are not removed automatically.
         covariate="EstimatedTotalIntraCranialVol",
         response_vars=["CortexVol"],
         scatter_data=data,
-        covariate_ranges={"age": [20, 100], "EstimatedTotalIntraCranialVol": [1.5e6, 2.0e6]},
+        covariate_ranges={
+            "age": [20, 100],
+            "EstimatedTotalIntraCranialVol": [1.5e6, 2.0e6],
+        },
         batch_effects="all",
         show_legend=False,
         plt_kwargs={"figsize": (4, 3)},

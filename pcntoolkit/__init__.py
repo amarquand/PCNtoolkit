@@ -1,6 +1,10 @@
 from importlib.metadata import version
 
-from .dataio.data_factory import load_correlation_matrix, load_fcon1000
+from .dataio.data_factory import (
+    fetch_example_correlation_matrix,
+    load_fcon1000,
+    load_lnm,
+)
 from .dataio.norm_data import NormData
 from .longitudinal_score import LongitudinalScore, ZDiffScore, ZGainScore
 from .math_functions.basis_function import (
@@ -50,8 +54,9 @@ __all__ = [
     "plot_centiles",
     "plot_qq",
     "plot_ridge",
-    "load_correlation_matrix",
+    "fetch_example_correlation_matrix",
     "load_fcon1000",
+    "load_lnm",
     "Runner",
     "plot_centiles_advanced",
     "plot_thrivelines",

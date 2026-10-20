@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
+from scipy.stats import norm
 
 from pcntoolkit.longitudinal_score.zgain_score import ZGainScore
 from pcntoolkit.math_functions.velocity import (
@@ -39,7 +40,7 @@ def test_compute_thrivelines_negative_correlation(correlation_matrix_array_facto
     matrix = correlation_matrix_array_factory(max_age=3, offset_correlations={1: -0.5})
     thrive_Z, _ = compute_thrivelines(
         matrix,
-        z_anchors=[0.0],
+        centiles=[0.5],
         covariate_range=(0, 1),
     )
     seg = thrive_Z.isel(segment=0).sel(response_vars="metric_a", drop=True)
@@ -51,8 +52,7 @@ def test_compute_thrivelines_respects_anchor_step(correlation_matrix_array_facto
     thrive_Z, _ = compute_thrivelines(
         matrix,
         anchor_step=2,
-        z_anchor_start=0,
-        z_anchor_end=1,
+        centiles=[0.5],
         covariate_range=(0, 4),
     )
     assert set(thrive_Z.coords["start_age"].values) <= {0, 2, 4}
@@ -63,7 +63,7 @@ def test_compute_thrivelines_timepoint_diff_two(correlation_matrix_array_factory
     thrive_Z, thrive_X = compute_thrivelines(
         matrix,
         timepoint_diff=2,
-        z_anchors=[1.0],
+        centiles=[0.84],
         covariate_range=(0, 2),
     )
     assert list(thrive_X.coords["offset"].values) == [0, 2]
@@ -80,7 +80,7 @@ def test_thrivelines_to_dataframe_multiple_response_vars(
     )
     thrive_Z, thrive_X = compute_thrivelines(
         matrix,
-        z_anchors=[0.0],
+        centiles=[0.5],
         covariate_range=(0, 1),
     )
     thrive_Y = thrive_Z.copy()
@@ -93,8 +93,8 @@ def test_zgain_get_thrivelines_overwrites_cache(
     fitted_norm_blr_model, blr_correlation_matrix
 ):
     scorer = ZGainScore(fitted_norm_blr_model, blr_correlation_matrix)
-    first = scorer.get_thrivelines(z_anchors=[0.0], covariate_range=(0, 1))
-    second = scorer.get_thrivelines(z_anchors=[1.0, 2.0], covariate_range=(0, 2))
+    first = scorer.get_thrivelines(centiles=[0.5], covariate_range=(0, 1))
+    second = scorer.get_thrivelines(centiles=[0.84, 0.98], covariate_range=(0, 2))
     assert scorer.thrivelines is second
     assert len(second) != len(first) or not first.equals(second)
 
@@ -143,8 +143,7 @@ def test_compute_thrivelines_output_structure(correlation_matrix_array_factory):
         matrix,
         timepoint_diff=1,
         anchor_step=1,
-        z_anchor_start=0,
-        z_anchor_end=1,
+        centiles=[0.5],
     )
 
     assert thrive_Z.dims == ("segment", "response_vars", "offset")
@@ -163,12 +162,13 @@ def test_compute_thrivelines_propagates_with_known_correlation(
         matrix,
         timepoint_diff=1,
         anchor_step=1,
-        z_anchor_start=1,
-        z_anchor_end=2,
+        centiles=[norm.cdf(1.0)],
         covariate_range=(0, 1),
     )
 
-    mask = (thrive_Z.coords["start_age"] == 0) & (thrive_Z.coords["start_z"] == 1)
+    mask = (thrive_Z.coords["start_age"] == 0) & np.isclose(
+        thrive_Z.coords["start_z"], 1.0
+    )
     seg_idx = int(np.where(mask)[0][0])
     seg = thrive_Z.isel(segment=seg_idx).sel(response_vars="metric_a", drop=True)
     expected_next = 1.0 * 0.8 + math.sqrt(1.0 - 0.8**2) * (-1.96)
@@ -180,16 +180,38 @@ def test_compute_thrivelines_propagates_with_known_correlation(
     assert list(x_seg.values) == [0, 1]
 
 
-def test_compute_thrivelines_uses_explicit_z_anchors(correlation_matrix_array_factory):
+def test_compute_thrivelines_starts_at_given_centiles(
+    correlation_matrix_array_factory,
+):
     matrix = correlation_matrix_array_factory(max_age=2, offset_correlations={1: 0.8})
-    z_anchors = np.array([-1.0, 0.5])
     thrive_Z, _ = compute_thrivelines(
         matrix,
-        z_anchors=z_anchors,
+        centiles=[0.05, 0.5],
         covariate_range=(0, 1),
     )
 
-    assert set(np.round(thrive_Z.coords["start_z"].values, 1)) == {-1.0, 0.5}
+    np.testing.assert_allclose(
+        np.unique(thrive_Z.coords["start_z"].values), norm.ppf([0.05, 0.5])
+    )
+
+
+def test_compute_thrivelines_default_centiles(correlation_matrix_array_factory):
+    matrix = correlation_matrix_array_factory(max_age=2, offset_correlations={1: 0.8})
+    thrive_Z, _ = compute_thrivelines(matrix, covariate_range=(0, 1))
+
+    np.testing.assert_allclose(
+        np.unique(thrive_Z.coords["start_z"].values),
+        norm.ppf([0.05, 0.25, 0.5, 0.75, 0.95]),
+    )
+
+
+@pytest.mark.parametrize("bad_centile", [0.0, 1.0, 1.5])
+def test_compute_thrivelines_rejects_centiles_outside_0_1(
+    correlation_matrix_array_factory, bad_centile
+):
+    matrix = correlation_matrix_array_factory(max_age=2, offset_correlations={1: 0.8})
+    with pytest.raises(ValueError, match="centiles"):
+        compute_thrivelines(matrix, centiles=[0.5, bad_centile])
 
 
 def test_compute_thrivelines_zero_correlation_warns_and_omits_segments(
@@ -201,8 +223,7 @@ def test_compute_thrivelines_zero_correlation_warns_and_omits_segments(
         thrive_Z, _ = compute_thrivelines(
             matrix,
             timepoint_diff=1,
-            z_anchor_start=0,
-            z_anchor_end=1,
+            centiles=[0.5],
             covariate_range=(0, 2),
         )
 
@@ -217,8 +238,7 @@ def test_compute_thrivelines_respects_covariate_range(correlation_matrix_array_f
     thrive_Z, thrive_X = compute_thrivelines(
         matrix,
         covariate_range=(1, 2),
-        z_anchor_start=0,
-        z_anchor_end=1,
+        centiles=[0.5],
     )
 
     assert set(thrive_Z.coords["start_age"].values) <= {1, 2}
@@ -252,7 +272,7 @@ def test_thrivelines_to_dataframe_long_format(correlation_matrix_array_factory):
     matrix = correlation_matrix_array_factory(max_age=2, offset_correlations={1: 0.8})
     thrive_Z, thrive_X = compute_thrivelines(
         matrix,
-        z_anchors=[0.0, 1.0],
+        centiles=[0.5, 0.84],
         covariate_range=(0, 1),
     )
     thrive_Y = thrive_Z.copy()
@@ -282,7 +302,7 @@ def test_zgain_get_thrivelines_returns_dataframe(
 ):
     scorer = ZGainScore(fitted_norm_blr_model, blr_correlation_matrix)
     thrivelines = scorer.get_thrivelines(
-        z_anchors=[0.0, 1.0],
+        centiles=[0.5, 0.84],
         covariate_range=(0, 2),
     )
 
@@ -300,13 +320,30 @@ def test_zgain_get_thrivelines_returns_dataframe(
     assert not thrivelines.empty
 
 
+def test_zgain_get_thrivelines_saved_csv_matches_returned_dataframe(
+    tmp_path, fitted_norm_blr_model, blr_correlation_matrix
+):
+    scorer = ZGainScore(fitted_norm_blr_model, blr_correlation_matrix)
+    save_path = tmp_path / "thrivelines.csv"
+
+    thrivelines = scorer.get_thrivelines(
+        centiles=[0.5, 0.84],
+        covariate_range=(0, 2),
+        save_path=save_path,
+    )
+
+    saved = pd.read_csv(save_path)
+    # Compare contents only: ignore column order
+    pd.testing.assert_frame_equal(saved, thrivelines, check_like=True)
+
+
 def test_plot_thrivelines_returns_figures(
     fitted_norm_blr_model,
     blr_correlation_matrix,
 ):
     scorer = ZGainScore(fitted_norm_blr_model, blr_correlation_matrix)
     thrivelines = scorer.get_thrivelines(
-        z_anchors=[0.0],
+        centiles=[0.5],
         covariate_range=(0, 2),
     )
 

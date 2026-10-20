@@ -13,7 +13,6 @@ more.
 
 .. code:: ipython3
 
-    import copy
     
     import numpy as np
     import pandas as pd
@@ -69,13 +68,13 @@ Here are examples of both.
         	sex (2)
     	site (23)
         
-
+    
 
 .. code:: text
 
     /home/runner/work/PCNtoolkit/PCNtoolkit/pcntoolkit/dataio/norm_data.py:427: UserWarning: No grouping was set for outlier removal, so thresholds are computed across all rows and site differences are ignored. Consider remove_outliers_group_by=['site'] (if available) or your site column.
       dataframe = cls.remove_outliers(
-
+    
 
 
 
@@ -92,18 +91,19 @@ Here are examples of both.
 .. code:: ipython3
 
     # Creating a NormData object from numpy arrays
-    import numpy as np
     
     from pcntoolkit import NormData
     
     # synthesize some data
     X = np.random.randn(100, 10)
     Y = np.random.randn(100, 10)
-    batch_effects = np.random.randint(0, 2, 100)[:,None]
+    batch_effects = np.random.randint(0, 2, 100)[:, None]
     subject_ids = np.arange(100)
     
     # Create a NormData object
-    np_norm_data = NormData.from_ndarrays("fcon1000", X=X, Y=Y, batch_effects=batch_effects, subject_ids=subject_ids)
+    np_norm_data = NormData.from_ndarrays(
+        "fcon1000", X=X, Y=Y, batch_effects=batch_effects, subject_ids=subject_ids
+    )
     np_norm_data.coords
 
 
@@ -117,7 +117,7 @@ Here are examples of both.
         - 1 batch effects:
         	batch_effect_0 (2)
         
-
+    
 
 
 
@@ -1555,12 +1555,12 @@ will have new attributes holding the predictions.
 Specifically, the NormData object will be extended with new data
 variables:
 
--  ``Z``: The predicted Z scores for each response variable
--  ``centiles``: The predicted centiles
--  ``logp``: The predicted log-p-values for each response variable
--  ``Yhat``: The predicted mean of the response variable
--  ``Y_harmonized``: The harmonized response variables
--  ``statistics``: An array of statistics for each response variable
+- ``Z``: The predicted Z scores for each response variable
+- ``centiles``: The predicted centiles
+- ``logp``: The predicted log-p-values for each response variable
+- ``Yhat``: The predicted mean of the response variable
+- ``Y_harmonized``: The harmonized response variables
+- ``statistics``: An array of statistics for each response variable
 
 And the following new coordinates: - ``centile``: The specific centile
 values - ``statistic``: The name of the computed statistics
@@ -1617,7 +1617,7 @@ values - ``statistic``: The name of the computed statistics
     Process: 2467 - 2026-09-25 17:46:23 - Harmonizing data for WM-hypointensities.
     Process: 2467 - 2026-09-25 17:46:23 - Harmonizing data for Left-Lateral-Ventricle.
     Process: 2467 - 2026-09-25 17:46:23 - Harmonizing data for Brain-Stem.
-
+    
 
 .. code:: ipython3
 
@@ -3151,10 +3151,18 @@ applicable to both of them.
     
     # create NormData objects
     norm_train = NormData.from_dataframe(
-        name="train", dataframe=train, covariates=covariates, batch_effects=batch_effects, response_vars=response_vars
+        name="train",
+        dataframe=train,
+        covariates=covariates,
+        batch_effects=batch_effects,
+        response_vars=response_vars,
     )
     norm_test = NormData.from_dataframe(
-        name="test", dataframe=test, covariates=covariates, batch_effects=batch_effects, response_vars=response_vars
+        name="test",
+        dataframe=test,
+        covariates=covariates,
+        batch_effects=batch_effects,
+        response_vars=response_vars,
     )
 
 
@@ -3178,7 +3186,7 @@ applicable to both of them.
         	sex (2)
     	site (18)
         
-
+    
 
 .. code:: ipython3
 
@@ -3189,7 +3197,7 @@ applicable to both of them.
 .. code:: text
 
     True
-
+    
 
 .. code:: ipython3
 

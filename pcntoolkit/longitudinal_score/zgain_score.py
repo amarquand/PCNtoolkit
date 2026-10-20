@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from os import PathLike
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -46,19 +47,19 @@ class ZGainScore(LongitudinalScore):
         A fitted normative model.
     correlation_matrix : CorrelationMatrix
         Age-to-age z-score correlations, estimated with
-        :meth:`~pcntoolkit.math_functions.correlation_matrix.CorrelationMatrix.compute`
+        ``CorrelationMatrix.compute``
         or loaded from a saved file.
 
     Attributes
     ----------
     zgain : xr.DataArray | None
-        The most recent z-gain scores produced by :meth:`score`. ``None`` until
-        :meth:`score` has been called at least once. It stores the same
-        ``xr.DataArray`` that :meth:`score` returns, so the result can be
+        The most recent z-gain scores produced by ``score``. ``None`` until
+        ``score`` has been called at least once. It stores the same
+        ``xr.DataArray`` that ``score`` returns, so the result can be
         retrieved later even if the return value was not saved.
     thrivelines : pd.DataFrame | None
-        The most recent thrivelines produced by :meth:`get_thrivelines`.
-        ``None`` until :meth:`get_thrivelines` has been called at least
+        The most recent thrivelines produced by ``get_thrivelines``.
+        ``None`` until ``get_thrivelines`` has been called at least
         once. A long-form table with columns ``segment``, ``start_age``,
         ``start_z``, ``response_var``, ``offset``, ``X``, ``Z``, and ``Y``.
     """
@@ -85,24 +86,21 @@ class ZGainScore(LongitudinalScore):
         *,
         timepoint_diff: int = 1,
         z_thrive: float = -1.96,
-        propagate: Callable[
-            [xr.DataArray, xr.DataArray | float, float], xr.DataArray
-        ] = propagate_thriveline_z,
+        propagate: Callable[[xr.DataArray, xr.DataArray | float, float], xr.DataArray] = propagate_thriveline_z,
         anchor_step: int = 1,
-        z_anchor_start: int = -3,
-        z_anchor_end: int = 4,
-        z_anchors: list[float] | np.ndarray | None = None,
+        centiles: list[float] | np.ndarray | None = None,
         covariate_range: tuple[int, int] | None = None,
+        save_path: str | PathLike[str] | None = None,
     ) -> pd.DataFrame:
         """Estimate and cache thrivelines from this score's correlation matrix.
 
-        This wraps :func:`~pcntoolkit.math_functions.velocity.compute_thrivelines`
-        and :func:`~pcntoolkit.math_functions.velocity.compute_thriveline_y`. It
+        This wraps ``compute_thrivelines``
+        and ``compute_thriveline_y``. It
         propagates thrivelines in Z-space, then maps them to response-scale Y
-        via :attr:`normative_model`. Covariates other than the thrive covariate
+        via ``normative_model``. Covariates other than the thrive covariate
         are fixed to the midpoint of each covariate's range in the normative
         model, the same rule
-        :func:`~pcntoolkit.util.plotter.plot_centiles` uses when it is given no
+        ``plot_centiles`` uses when it is given no
         scatter data. Batch effects use the first allowed level from the
         normative model.
 
@@ -113,28 +111,42 @@ class ZGainScore(LongitudinalScore):
             segment (e.g. one year).
         z_thrive : float, default -1.96
             Shrinkage term passed to the thriveline propagation update.
-        propagate : callable, default :func:`~pcntoolkit.math_functions.velocity.propagate_thriveline_z`
+        propagate : callable, default ``propagate_thriveline_z``
             Function that propagates z-scores along one segment:
             ``propagate(hop_correlations, start_z, z_thrive) -> xr.DataArray``.
         anchor_step : int, default 1
             Spacing between starting covariate anchors on the overlay grid.
-        z_anchor_start, z_anchor_end : int, default -3 and 4
-            Half-open range ``[z_anchor_start, z_anchor_end)`` of integer
-            starting z-scores used when ``z_anchors`` is not provided.
-        z_anchors : array-like of float, optional
-            Explicit starting z-scores (e.g. ``norm.ppf(centiles)``). When
-            given, ``z_anchor_start`` and ``z_anchor_end`` are ignored.
+        centiles : array-like of float, optional
+            Centiles (between 0 and 1) where thrivelines start. Defaults to
+            ``[0.05, 0.25, 0.5, 0.75, 0.95]``, the same centiles that
+            ``plot_thrivelines`` draws by
+            default, so every thriveline starts on a plotted centile curve.
         covariate_range : tuple of int, optional
             ``(min, max)`` covariate bounds used to slice the correlation
             matrix and place grid anchors. When omitted, anchors span the
             covariate coordinates in the stored correlation matrix.
+        save_path : str | PathLike[str] | None, optional
+            If set, write the thriveline table to this CSV path, one row per
+            point on a thriveline. Opened as a table, it looks like::
+
+                segment  start_age  start_z  response_var  offset   X       Z     Y
+                0        20         0.0      lh_thickness  0       20   0.000  2.71
+                0        20         0.0      lh_thickness  1       21  -1.176  2.62
+
+            Read it back with ``pd.read_csv``.
 
         Returns
         -------
         pd.DataFrame
             Long-form thriveline table with columns ``segment``, ``start_age``,
             ``start_z``, ``response_var``, ``offset``, ``X``, ``Z``, and ``Y``.
-            Stored on the instance as :attr:`thrivelines`.
+            Stored on the instance as ``thrivelines``.
+
+        Raises
+        ------
+        ValueError
+            If ``timepoint_diff`` is not positive, or if a centile is not
+            strictly between 0 and 1.
         """
         # Step 1: propagate anchor segments in Z-space from the correlation matrix.
         # This bare name resolves to the imported velocity function (a module
@@ -145,9 +157,7 @@ class ZGainScore(LongitudinalScore):
             z_thrive=z_thrive,
             propagate=propagate,
             anchor_step=anchor_step,
-            z_anchor_start=z_anchor_start,
-            z_anchor_end=z_anchor_end,
-            z_anchors=z_anchors,
+            centiles=centiles,
             covariate_range=covariate_range,
         )
         # Step 2: map each (X, Z) point to response-scale Y via the normative model.
@@ -159,12 +169,14 @@ class ZGainScore(LongitudinalScore):
         )
         # Step 3: flatten to a long-form DataFrame for inspection and plotting.
         self.thrivelines = thrivelines_to_dataframe(thrive_Z, thrive_X, thrive_Y)
+        if save_path is not None:
+            self._save_dataframe_csv(self.thrivelines, save_path)
         return self.thrivelines
 
     def score(
         self,
         score_data: NormData,
-        subject_id_col: str | None = None,
+        save_path: str | PathLike[str] | None = None,
     ) -> xr.DataArray:
         """Compute the z-gain score for every subject in ``score_data``.
 
@@ -174,15 +186,21 @@ class ZGainScore(LongitudinalScore):
             Longitudinal cohort with at least two distinct visits per subject,
             numeric visit labels on the NormData object, and z-scores already
             computed.
-        subject_id_col : str, optional
-            Subject id column name. Kept for backwards compatibility; the
-            subject ids are read from ``score_data`` itself.
+        save_path : str | PathLike[str] | None, optional
+            If set, write scores to this CSV path, one row per subject and
+            one column per response variable. Opened as a table, it looks
+            like::
+
+                subjects  lh_thickness  rh_thickness
+                sub-01            0.42         -1.10
+                sub-02           -0.35          0.87
+                sub-03            2.13          1.95
 
         Returns
         -------
         xr.DataArray
             One z-gain score per subject and response variable. The same array
-            is also stored on the instance as :attr:`zgain` for later retrieval.
+            is also stored on the instance as ``zgain`` for later retrieval.
         """
         # Run checks
         self._check_is_predicted(score_data)
@@ -237,9 +255,7 @@ class ZGainScore(LongitudinalScore):
                 r = self.correlation_matrix.get(rv, age_prev, age_last)
                 denominator = np.sqrt(1.0 - r**2)
                 # Compute zgain
-                scores[subject_index[subject], j] = (
-                    z_rv[obs_last] - r * z_rv[obs_prev]
-                ) / denominator
+                scores[subject_index[subject], j] = (z_rv[obs_last] - r * z_rv[obs_prev]) / denominator
 
         # Store the result so it can be retrieved later via self.zgain, even
         # if the caller does not keep the returned value.
@@ -249,4 +265,6 @@ class ZGainScore(LongitudinalScore):
             coords={"subjects": subjects, "response_vars": response_vars},
             name="zgain",
         )
+        if save_path is not None:
+            self._save_scores_csv(self.zgain, save_path)
         return self.zgain
