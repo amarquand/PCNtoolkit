@@ -206,3 +206,10 @@ Fix packaging issues (no missing files or folders)
 
 
 
+# Unreleased
+
+**Bug fixes**
+- HBR now computes predictive log densities as the log of the likelihood
+  averaged over posterior draws, using logsumexp for numerical stability.
+  This changes HBR MLL and MSLL values; previously they used the mean of
+  log likelihoods. Per-draw likelihoods and BLR evaluation are unchanged.

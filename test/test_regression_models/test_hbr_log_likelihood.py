@@ -79,7 +79,7 @@ def expected_logp(model: HBR, Y: xr.DataArray, shash: bool) -> np.ndarray:
 
 
 @pytest.mark.parametrize("shash", [False, True], ids=["normal", "shash"])
-def test_samples_preserve_values_dimensions_and_legacy_mean(shash: bool) -> None:
+def test_samples_preserve_values_and_predictive_log_density(shash: bool) -> None:
     model = make_model(shash)
     X, be, Y = make_data()
     before = model.idata.copy(deep=True)
@@ -90,9 +90,12 @@ def test_samples_preserve_values_dimensions_and_legacy_mean(shash: bool) -> None
     assert samples.observations.values.tolist() == Y.observations.values.tolist()
     expected = expected_logp(model, Y, shash)
     np.testing.assert_allclose(samples.values, expected)
-    legacy = model.elemwise_logp(X, be, Y)
-    assert legacy.dims == ("observations",)
-    np.testing.assert_allclose(legacy.values, expected.mean(axis=(0, 1)))
+    predictive = model.elemwise_logp(X, be, Y)
+    assert predictive.dims == ("observations",)
+    assert predictive.observations.values.tolist() == Y.observations.values.tolist()
+    expected_predictive = np.log(np.exp(expected).mean(axis=(0, 1)))
+    np.testing.assert_allclose(predictive.values, expected_predictive)
+    assert not np.allclose(predictive.values, expected.mean(axis=(0, 1)))
     xr.testing.assert_identical(model.idata, before)
 
 
@@ -130,3 +133,57 @@ def test_likelihood_requires_fitted_model(method: str) -> None:
     model = HBR("unfitted")
     with pytest.raises(ValueError):
         getattr(model, method)(*make_data())
+
+
+@pytest.mark.parametrize("shape", [(1, 1), (2, 3)])
+def test_identical_draws_equal_single_density(shape: tuple[int, int]) -> None:
+    model = make_model()
+    model.idata = xr.DataTree.from_dict(
+        {
+            "posterior": xr.Dataset(
+                {
+                    "mu": (("chain", "draw"), np.full(shape, 0.2)),
+                    "sigma": (("chain", "draw"), np.full(shape, 1.3)),
+                },
+                coords={"chain": np.arange(shape[0]), "draw": np.arange(shape[1])},
+            )
+        }
+    )
+    X, be, Y = make_data()
+    np.testing.assert_allclose(
+        model.elemwise_logp(X, be, Y), norm.logpdf(Y.values, loc=0.2, scale=1.3)
+    )
+
+
+def test_extreme_log_likelihoods_do_not_underflow() -> None:
+    model = make_model()
+    X, be, Y = make_data()
+    Y = Y + 1000
+    logp = expected_logp(model, Y, False)
+    assert (np.exp(logp) == 0).all()
+    # Pairwise logaddexp provides an independent stable mixture reference.
+    expected = np.logaddexp.reduce(logp.reshape(6, 3), axis=0) - np.log(6)
+    result = model.elemwise_logp(X, be, Y)
+    assert np.isfinite(result.values).all()
+    np.testing.assert_allclose(result, expected)
+
+
+def test_evaluator_uses_predictive_density_for_mll_and_msll() -> None:
+    from pcntoolkit.dataio.norm_data import NormData
+    from pcntoolkit.util.evaluator import Evaluator
+
+    model = make_model()
+    X, be, Y = make_data()
+    data = NormData.from_ndarrays(
+        name="predictive",
+        X=X.values,
+        Y=Y.values[:, None],
+        attrs={"covariates": ["age"], "response_vars": ["response"]},
+    ).sel(response_vars="response")
+    data["logp"] = ("observations", model.elemwise_logp(X, be, Y).values)
+    data["baseline_logp"] = ("observations", np.full(3, -2.0))
+    expected = -np.log(np.exp(expected_logp(model, Y, False)).mean(axis=(0, 1))).mean()
+    evaluator = Evaluator()
+    with pytest.warns(DeprecationWarning):
+        assert evaluator._evaluate_mll(data) == pytest.approx(expected)
+    assert evaluator._evaluate_msll(data) == pytest.approx(expected - 2.0)

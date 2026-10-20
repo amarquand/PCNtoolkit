@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pymc as pm  # type: ignore
 import xarray as xr
+from scipy.special import logsumexp
 
 from pcntoolkit.math_functions.factorize import *
 from pcntoolkit.math_functions.likelihood import (
@@ -409,7 +410,7 @@ class HBR(RegressionModel):
     def elemwise_logp(
         self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray
     ) -> xr.DataArray:
-        """Compute the posterior mean log likelihood for each observation.
+        """Compute the posterior predictive log density for each observation.
 
         Parameters
         ----------
@@ -423,15 +424,13 @@ class HBR(RegressionModel):
         Returns
         -------
         xr.DataArray
-            Log likelihoods averaged over posterior draws, preserving the
-            existing MLL behavior. This is not the log of the posterior
-            predictive density.
+            Log of the likelihood averaged over all chains and draws,
+            computed in log space for numerical stability. Use held-out
+            observations to assess out-of-sample predictive performance.
         """
-        return (
-            self.log_likelihood_samples(X, be, Y)
-            .stack(sample=("chain", "draw"))
-            .mean("sample")
-        )
+        samples = self.log_likelihood_samples(X, be, Y)
+        n_samples = samples.sizes["chain"] * samples.sizes["draw"]
+        return samples.reduce(logsumexp, dim=("chain", "draw")) - np.log(n_samples)
 
     def model_specific_evaluation(self, path: str) -> None:
         """
