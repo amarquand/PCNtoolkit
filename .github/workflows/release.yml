@@ -145,8 +145,9 @@ jobs:
         run: |
           # gh creates the tag, publishes the release
           # page, and uses the extracted CHANGES section
-          # as the release description. --target is
-          # needed: without it gh tags the repository's
+          # as the release description. 
+          #
+          # --target is needed: without it gh tags the repository's
           # default branch (dev), not master.
           gh release create "v$VERSION" \
             --target "$GITHUB_SHA" \
