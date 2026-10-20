@@ -359,9 +359,10 @@ class HBR(RegressionModel):
         result = xr.apply_ufunc(fn, *array_of_vars, kwargs=kwargs).mean(dim="sample")
         return result
 
-    def elemwise_logp(self, X, be, Y) -> xr.DataArray:  # type: ignore
-        """
-        Compute log-probabilities for each observation in the data.
+    def log_likelihood_samples(
+        self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray
+    ) -> xr.DataArray:
+        """Compute observation log likelihoods at each posterior draw.
 
         Parameters
         ----------
@@ -369,15 +370,20 @@ class HBR(RegressionModel):
             Covariate data
         be : xr.DataArray
             Batch effect data
-        be_maps : dict[str, dict[str, int]]
-            Batch effect maps
         Y : xr.DataArray
-            Response variable data
+            Response data on the scale used by the regression model.
 
         Returns
         -------
         xr.DataArray
-            Log-probabilities of the data
+            Conditional log likelihoods with dimensions ``chain``, ``draw``,
+            and ``observations``. Includes neither prior log densities nor
+            averaging over draws. The stored inference data is not extended.
+
+        Raises
+        ------
+        ValueError
+            The model has not been fitted.
         """
 
         if not self.is_fitted:
@@ -393,7 +399,39 @@ class HBR(RegressionModel):
                 extend_inferencedata=False,
                 progressbar=False,
             )
-        return az.extract(logp, "log_likelihood", var_names=["Yhat"]).mean("sample")
+        # PyMC may replace chain/draw labels with positional indices.
+        samples = logp["Yhat"].assign_coords(
+            chain=self.idata["posterior"].coords["chain"],
+            draw=self.idata["posterior"].coords["draw"],
+        )
+        return samples.transpose("chain", "draw", "observations")
+
+    def elemwise_logp(
+        self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray
+    ) -> xr.DataArray:
+        """Compute the posterior mean log likelihood for each observation.
+
+        Parameters
+        ----------
+        X : xr.DataArray
+            Covariate data.
+        be : xr.DataArray
+            Batch effect data.
+        Y : xr.DataArray
+            Response data on the scale used by the regression model.
+
+        Returns
+        -------
+        xr.DataArray
+            Log likelihoods averaged over posterior draws, preserving the
+            existing MLL behavior. This is not the log of the posterior
+            predictive density.
+        """
+        return (
+            self.log_likelihood_samples(X, be, Y)
+            .stack(sample=("chain", "draw"))
+            .mean("sample")
+        )
 
     def model_specific_evaluation(self, path: str) -> None:
         """
