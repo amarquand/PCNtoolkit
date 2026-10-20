@@ -18,7 +18,7 @@ on:
 permissions:
   # Required to create tags and GitHub Releases.
   contents: write
-  # Required to open and merge the master-to-dev PR.
+  # Required to open the master-to-dev PR.
   pull-requests: write
 
 jobs:
@@ -161,8 +161,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Create the sync PR and capture its URL so
-          # the merge step can reference it by number.
+          # Create the sync PR and print its URL.
           # --body is required: without a terminal, gh
           # refuses to create a PR from a title alone.
           PR_URL=$(gh pr create \
@@ -172,24 +171,3 @@ jobs:
               "Merge master back to dev after $VERSION release" \
             --body \
               "Automatic sync of master into dev after the $VERSION release. If it conflicts, keep the dev version.")
-          # Export the PR URL to subsequent steps.
-          echo "PR_URL=$PR_URL" >> "$GITHUB_ENV"
-          echo "Created PR: $PR_URL"
-
-      # ── 8. Merge PR: master → dev ───────────────────
-      - name: Merge master-to-dev PR
-        if: steps.check_tag.outputs.skip == 'false'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Extract the PR number from the URL
-          # (last path segment, e.g. ".../pull/42").
-          PR_NUM=$(basename "$PR_URL")
-          # Merge PR
-          gh pr merge "$PR_NUM" \
-            --merge \
-            --admin \
-            --delete-branch=false \
-            || echo \
-              "Auto-merge blocked by branch protection." \
-              " Merge the PR manually: $PR_URL"
