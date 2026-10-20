@@ -350,7 +350,44 @@ All results can be found in the save directory.
 
 .. code:: ipython3
 
+    # Preserve the original training data for the optional BIC_approx example.
+    bic_training_data = train.copy(deep=True)
     model.fit_predict(train, test);
+
+Optional: exploratory BIC approximation
+---------------------------------------
+
+After fitting, we can calculate an exploratory score using the SHASH likelihood
+on the original training data. This is **BIC_approx, not validated BIC**.
+It uses the best total log likelihood among stored posterior draws and a
+provisional structural parameter-count penalty. Results depend on the number
+and quality of draws and the priors.
+
+Use the training-data copy saved before fitting, and apply the fitted
+preprocessing once. Do not use the test set. Compare only models fitted to the
+same response, training observations, hierarchical structure, and response
+scale, with identical fitted transforms and scalers. This approximation should
+not be used to select random-effect structures.
+
+The method emits an approximation warning. Scores are returned separately;
+they are not added to the usual evaluation statistics or saved automatically.
+See :doc:`hbr_bic_approx`
+for the calculation and limitations.
+
+.. code:: ipython3
+
+    model.check_is_fitted()
+    prepared_train = bic_training_data.copy(deep=True)
+    model.preprocess(prepared_train)
+
+    bic_approx_scores = {}
+    for response in prepared_train.response_var_list:
+        response_data = prepared_train.sel(response_vars=response)
+        X_train, be_train, _, Y_train, _ = model.extract_data(response_data)
+        hbr = model.regression_models[response]
+        bic_approx_scores[response] = hbr.bic_approx(X_train, be_train, Y_train)
+
+    display(pd.Series(bic_approx_scores, name="BIC_approx").to_frame())
 
 Plot the results
 ----------------
