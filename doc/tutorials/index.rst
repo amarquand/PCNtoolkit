@@ -36,3 +36,4 @@ Tutorials
    :caption: Longitudinal normative modelling
 
    14_longitudinal_modelling
+   16_correlation_matrix

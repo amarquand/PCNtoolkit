@@ -219,3 +219,13 @@ Fix packaging issues (no missing files or folders)
   training log likelihood among posterior draws and a provisional structural
   parameter penalty. It emits an approximation warning and is not validated
   BIC. Document the training-data and model-comparison limitations.
+# Version 1.4.0 (unreleased)
+
+**Bug fixes**
+- Composite bases now include only covariates listed in their parts by default,
+  allowing different covariates for Gaussian mu and sigma. Set
+  include_untransformed=True to retain implicit inclusion in existing scripts.
+- Models saved before 1.4.0 retain their original composite design through
+  migration. Explicit saved settings are preserved.
+- Composite dimensions include passthrough columns when enabled. Fitted
+  composite state and linear basis state survive serialization.

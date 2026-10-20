@@ -7,7 +7,6 @@ from typing import Literal
 import pandas as pd
 
 from pcntoolkit.dataio.norm_data import NormData
-from pcntoolkit.math_functions.correlation_matrix import CorrelationMatrix
 
 
 def load_fcon1000(save_path: str | None = None):
@@ -353,19 +352,20 @@ CORRELATION_MATRIX_URL = (
 CORRELATION_MATRIX_RESPONSE_VAR = "rh_G_front_middle_thickness"
 
 
-def load_correlation_matrix(save_path: str | None = None) -> CorrelationMatrix:
-    """Download and save an example correlation matrix, or load it from disk.
+def fetch_example_correlation_matrix(save_path: str | None = None) -> str:
+    """Download an example correlation matrix and return the path to its CSV.
 
     Parameters
     ----------
     save_path : str | None
-        Folder to save the matrix to, or load it from if it is already
-        downloaded. Defaults to ``pcntoolkit_resources/data/correlation_matrix``.
+        Folder to save the matrix to. Defaults to
+        ``pcntoolkit_resources/data/correlation_matrix``.
 
     Returns
     -------
-    CorrelationMatrix
-        The example correlation matrix.
+    str
+        Path to the CSV, named ``<response_var>.csv`` as
+        ``CorrelationMatrix.load`` expects.
     """
     if not save_path:
         save_path = os.path.join("pcntoolkit_resources", "data", "correlation_matrix")
@@ -377,8 +377,7 @@ def load_correlation_matrix(save_path: str | None = None) -> CorrelationMatrix:
     if not os.path.exists(data_path):
         urllib.request.urlretrieve(CORRELATION_MATRIX_URL, data_path)
 
-    # Load the correlation matrix from the CSV file.
-    return CorrelationMatrix.load(data_path)
+    return data_path
 
 
 # NOTE: This dataset is not public
