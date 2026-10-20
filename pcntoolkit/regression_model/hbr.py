@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import os
+import warnings
 from typing import Any, Dict, Optional
 
 import arviz as az  # type: ignore
@@ -431,6 +432,64 @@ class HBR(RegressionModel):
         samples = self.log_likelihood_samples(X, be, Y)
         n_samples = samples.sizes["chain"] * samples.sizes["draw"]
         return samples.reduce(logsumexp, dim=("chain", "draw")) - np.log(n_samples)
+
+    def bic_approx(self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray) -> float:
+        """Compute an exploratory BIC-like score from posterior draws.
+
+        Parameters
+        ----------
+        X : xr.DataArray
+            Original training covariates, preprocessed as during fitting.
+        be : xr.DataArray
+            Original training batch effects, mapped as during fitting.
+        Y : xr.DataArray
+            Original training responses on the fitted regression scale.
+            Training-set identity cannot be verified by this method.
+
+        Returns
+        -------
+        float
+            ``-2 * best_total_log_likelihood + n_parameters() * log(n)``.
+            The best total is selected from a single posterior draw. This
+            is not validated BIC: the draw need not be the maximum-likelihood
+            estimate and the structural count is a provisional penalty.
+
+        Raises
+        ------
+        ValueError
+            The model is unfitted, counts are unavailable, or likelihoods
+            are empty or nonfinite.
+
+        Warns
+        -----
+        UserWarning
+            The score is an approximation for exploratory use only.
+        """
+        samples = self.log_likelihood_samples(X, be, Y)
+        if any(samples.sizes[dim] == 0 for dim in ("chain", "draw", "observations")):
+            raise ValueError("BIC_approx requires non-empty likelihood dimensions")
+        if not np.isfinite(samples.values).all():
+            raise ValueError("BIC_approx requires finite log likelihoods")
+        totals = samples.sum("observations", skipna=False)
+        if not np.isfinite(totals.values).all():
+            raise ValueError("BIC_approx requires finite total log likelihoods")
+        best_logp = float(totals.max(("chain", "draw"), skipna=False).item())
+        n_params = self.n_parameters()
+        if (
+            isinstance(n_params, bool)
+            or not isinstance(n_params, (int, np.integer))
+            or n_params < 0
+        ):
+            raise ValueError("n_params must be a nonnegative integer")
+        score = float(-2 * best_logp + n_params * np.log(samples.sizes["observations"]))
+        warnings.warn(
+            "BIC_approx is an exploratory score, not validated BIC: it uses "
+            "the best posterior draw and a provisional structural-count penalty. "
+            "Supply the original training data on the fitted regression scale.",
+            UserWarning,
+            stacklevel=2,
+        )
+        return score
 
     def model_specific_evaluation(self, path: str) -> None:
         """

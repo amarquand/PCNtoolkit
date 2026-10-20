@@ -19,6 +19,7 @@ Tutorials
    15_HBR_ZINB
    07_model_comparison
    13_evaluation_metrics
+   hbr_bic_approx
    08_cluster
    09_command_line_interface
 
