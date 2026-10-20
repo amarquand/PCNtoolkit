@@ -244,21 +244,32 @@ class Evaluator:
                 mll
             )
 
-    def evaluate_bic(self, data: NormData) -> None:
+    def evaluate_bic(self, data: NormData, parameter_counts: dict[str, int]) -> None:
         """
         Evaluate Bayesian Information Criterion (BIC) for model predictions.
 
-        BIC is a criterion for model selection that statistics the trade-off between
-        model fit and complexity.
+        Uses the existing RSS approximation, not a likelihood-aware BIC.
 
         Parameters
         ----------
         data : NormData
             Data container with predictions and actual values. Must contain 'y' and 'Yhat' variables.
+        parameter_counts : dict[str, int]
+            Explicit parameter counts keyed by response variable.
+
+        Raises
+        ------
+        ValueError
+            A response variable has no supplied parameter count.
         """
+        missing = set(data.response_var_list) - parameter_counts.keys()
+        if missing:
+            raise ValueError(
+                f"Missing parameter counts for responses: {sorted(missing)}"
+            )
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel(response_vars=responsevar)
-            bic = self._evaluate_bic(resp_predict_data)
+            bic = self._evaluate_bic(resp_predict_data, parameter_counts[responsevar])
             self.prepare(responsevar)
             data.statistics.loc[{"response_vars": responsevar, "statistic": "BIC"}] = (
                 bic
@@ -518,21 +529,23 @@ class Evaluator:
         mll = -np.mean(logp)
         return float(mll)
 
-    def _evaluate_bic(self, data: NormData) -> float:
+    def _evaluate_bic(self, data: NormData, n_params: int) -> float:
         """
-        Calculate Bayesian Information Criterion.
+        Calculate the existing RSS-based BIC approximation.
 
         Parameters
         ----------
         data : NormData
             Data container with predictions and actual values
+        n_params : int
+            Explicit parameter count; structural counts need not be valid
+            BIC complexity penalties.
 
         Returns
         -------
         float
             Bayesian Information Criterion value
         """
-        n_params = self.n_params()
         y = data["Y"].values
         yhat = data["Yhat"].values
 
@@ -772,7 +785,3 @@ class Evaluator:
     def reset(self) -> None:
         """Reset the evaluator state."""
         pass
-
-    def n_params(self) -> int:
-        """Return the number of parameters in the model."""
-        return 0  # Override in subclasses

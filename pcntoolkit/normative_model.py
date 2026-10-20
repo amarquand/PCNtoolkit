@@ -819,6 +819,32 @@ class NormativeModel:
                 if var in data.data_vars:
                     data[var] = np.exp(data[var])
 
+    def n_parameters(self, response_vars: list[str] | None = None) -> dict[str, int]:
+        """Return structural parameter counts for the requested fitted models.
+
+        Parameters
+        ----------
+        response_vars : list[str], optional
+            Responses to count. Defaults to all stored regression models.
+
+        Returns
+        -------
+        dict[str, int]
+            Parameter counts keyed by response variable.
+
+        Raises
+        ------
+        KeyError
+            A requested response has no stored regression model.
+        ValueError
+            A model is unfitted or its parameter dimensions are unavailable.
+        """
+        responses = self.regression_models if response_vars is None else response_vars
+        return {
+            response: self.regression_models[response].n_parameters()
+            for response in responses
+        }
+
     def evaluate(self, data: NormData) -> None:
         """
         Evaluates the model performance on the data.
