@@ -157,17 +157,16 @@ jobs:
       # ── 7. Open PR: master → dev ────────────────────
       - name: Create PR to sync master back into dev
         if: steps.check_tag.outputs.skip == 'false'
-        id: create_pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Create the sync PR and print its URL.
+          # Create the sync PR.
           # --body is required: without a terminal, gh
           # refuses to create a PR from a title alone.
-          PR_URL=$(gh pr create \
+          gh pr create \
             --base dev \
             --head master \
             --title \
               "Merge master back to dev after $VERSION release" \
             --body \
-              "Automatic sync of master into dev after the $VERSION release. If it conflicts, keep the dev version.")
+              "Automatic sync of master into dev after the $VERSION release. If it conflicts, keep the dev version."
