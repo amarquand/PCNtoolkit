@@ -160,6 +160,23 @@ class BLR(RegressionModel):
         self.hyp0 = hyp0
         self.hyp: np.ndarray = None  # type: ignore
 
+    def parameter_dimensions(self) -> dict[str, int]:
+        """Count posterior coefficients and optimized hyperparameters.
+
+        The coefficient posterior means (``m``) have one entry per column in
+        the expanded mean design matrix, including batch-effect columns.
+        ``hyp`` holds optimized noise, prior-precision and warp parameters.
+        These are *structural* counts; the coefficients were integrated out
+        during marginal-likelihood optimization and should not automatically
+        be included in a marginal-likelihood BIC penalty.
+        """
+        if not self.is_fitted or self.m is None or self.hyp is None:
+            raise ValueError("Parameter counts require a fitted BLR model")
+        return {
+            "coefficients": int(np.size(self.m)),
+            "hyperparameters": int(np.size(self.hyp)),
+        }
+
     def initialize_warp(self) -> None:
         if self.warp_name:
             self.warp = self.get_warp(self.warp_name)

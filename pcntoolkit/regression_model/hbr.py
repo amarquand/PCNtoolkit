@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import os
+import warnings
 from typing import Any, Dict, Optional
 
 import arviz as az  # type: ignore
@@ -9,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pymc as pm  # type: ignore
 import xarray as xr
+from scipy.special import logsumexp
 
 from pcntoolkit.math_functions.factorize import *
 from pcntoolkit.math_functions.likelihood import (
@@ -116,6 +118,32 @@ class HBR(RegressionModel):
         self.vi_loss: np.ndarray | None = None
         self.pymc_model: pm.Model = None  # type: ignore
         self.be_maps: dict = None  # type:ignore
+        # Fit-time unconstrained PyMC parameter dimensions, also saved with
+        # the model because a loaded model does not have a compiled graph.
+        self._parameter_dimensions: dict[str, int] | None = None
+
+    def parameter_dimensions(self) -> dict[str, int]:
+        """Return dimensions of the fitted PyMC model's free variables.
+
+        Count the scalar entries of the model's initial point (the sampling
+        space), not the posterior arrays: PyMC transforms account for
+        constraints such as K-level zero-sum offsets having K-1 degrees of
+        freedom. Deterministics, observations, chains and draws are excluded.
+        """
+        if not self.is_fitted:
+            raise ValueError("Parameter counts require a fitted HBR model")
+        if self._parameter_dimensions is None:
+            if self.pymc_model is None:
+                raise ValueError(
+                    "Parameter dimensions are unavailable for this saved HBR "
+                    "model; a compiled model is required"
+                )
+            self._parameter_dimensions = {
+                name: int(np.size(value))
+                for name, value in self.pymc_model.initial_point().items()
+            }
+        return dict(self._parameter_dimensions)
+
 
     def fit(
         self,
@@ -144,6 +172,10 @@ class HBR(RegressionModel):
         """
         self.be_maps = copy.deepcopy(be_maps)
         self.pymc_model: pm.Model = self.likelihood.compile(X, be, self.be_maps, Y)
+        self._parameter_dimensions = {
+            name: int(np.size(value))
+            for name, value in self.pymc_model.initial_point().items()
+        }
         with self.pymc_model:
             self.idata = self._run_inference()
         self.is_fitted = True
@@ -329,9 +361,10 @@ class HBR(RegressionModel):
         result = xr.apply_ufunc(fn, *array_of_vars, kwargs=kwargs).mean(dim="sample")
         return result
 
-    def elemwise_logp(self, X, be, Y) -> xr.DataArray:  # type: ignore
-        """
-        Compute log-probabilities for each observation in the data.
+    def log_likelihood_samples(
+        self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray
+    ) -> xr.DataArray:
+        """Compute observation log likelihoods at each posterior draw.
 
         Parameters
         ----------
@@ -339,15 +372,20 @@ class HBR(RegressionModel):
             Covariate data
         be : xr.DataArray
             Batch effect data
-        be_maps : dict[str, dict[str, int]]
-            Batch effect maps
         Y : xr.DataArray
-            Response variable data
+            Response data on the scale used by the regression model.
 
         Returns
         -------
         xr.DataArray
-            Log-probabilities of the data
+            Conditional log likelihoods with dimensions ``chain``, ``draw``,
+            and ``observations``. Includes neither prior log densities nor
+            averaging over draws. The stored inference data is not extended.
+
+        Raises
+        ------
+        ValueError
+            The model has not been fitted.
         """
 
         if not self.is_fitted:
@@ -363,7 +401,95 @@ class HBR(RegressionModel):
                 extend_inferencedata=False,
                 progressbar=False,
             )
-        return az.extract(logp, "log_likelihood", var_names=["Yhat"]).mean("sample")
+        # PyMC may replace chain/draw labels with positional indices.
+        samples = logp["Yhat"].assign_coords(
+            chain=self.idata["posterior"].coords["chain"],
+            draw=self.idata["posterior"].coords["draw"],
+        )
+        return samples.transpose("chain", "draw", "observations")
+
+    def elemwise_logp(
+        self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray
+    ) -> xr.DataArray:
+        """Compute the posterior predictive log density for each observation.
+
+        Parameters
+        ----------
+        X : xr.DataArray
+            Covariate data.
+        be : xr.DataArray
+            Batch effect data.
+        Y : xr.DataArray
+            Response data on the scale used by the regression model.
+
+        Returns
+        -------
+        xr.DataArray
+            Log of the likelihood averaged over all chains and draws,
+            computed in log space for numerical stability. Use held-out
+            observations to assess out-of-sample predictive performance.
+        """
+        samples = self.log_likelihood_samples(X, be, Y)
+        n_samples = samples.sizes["chain"] * samples.sizes["draw"]
+        return samples.reduce(logsumexp, dim=("chain", "draw")) - np.log(n_samples)
+
+    def bic_approx(self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray) -> float:
+        """Compute an exploratory BIC-like score from posterior draws.
+
+        Parameters
+        ----------
+        X : xr.DataArray
+            Original training covariates, preprocessed as during fitting.
+        be : xr.DataArray
+            Original training batch effects, mapped as during fitting.
+        Y : xr.DataArray
+            Original training responses on the fitted regression scale.
+            Training-set identity cannot be verified by this method.
+
+        Returns
+        -------
+        float
+            ``-2 * best_total_log_likelihood + n_parameters() * log(n)``.
+            The best total is selected from a single posterior draw. This
+            is not validated BIC: the draw need not be the maximum-likelihood
+            estimate and the structural count is a provisional penalty.
+
+        Raises
+        ------
+        ValueError
+            The model is unfitted, counts are unavailable, or likelihoods
+            are empty or nonfinite.
+
+        Warns
+        -----
+        UserWarning
+            The score is an approximation for exploratory use only.
+        """
+        samples = self.log_likelihood_samples(X, be, Y)
+        if any(samples.sizes[dim] == 0 for dim in ("chain", "draw", "observations")):
+            raise ValueError("BIC_approx requires non-empty likelihood dimensions")
+        if not np.isfinite(samples.values).all():
+            raise ValueError("BIC_approx requires finite log likelihoods")
+        totals = samples.sum("observations", skipna=False)
+        if not np.isfinite(totals.values).all():
+            raise ValueError("BIC_approx requires finite total log likelihoods")
+        best_logp = float(totals.max(("chain", "draw"), skipna=False).item())
+        n_params = self.n_parameters()
+        if (
+            isinstance(n_params, bool)
+            or not isinstance(n_params, (int, np.integer))
+            or n_params < 0
+        ):
+            raise ValueError("n_params must be a nonnegative integer")
+        score = float(-2 * best_logp + n_params * np.log(samples.sizes["observations"]))
+        warnings.warn(
+            "BIC_approx is an exploratory score, not validated BIC: it uses "
+            "the best posterior draw and a provisional structural-count penalty. "
+            "Supply the original training data on the fitted regression scale.",
+            UserWarning,
+            stacklevel=2,
+        )
+        return score
 
     def model_specific_evaluation(self, path: str) -> None:
         """
@@ -484,6 +610,10 @@ class HBR(RegressionModel):
             new_hbr_model.idata = new_hbr_model._run_inference(**inference_overrides)
             new_hbr_model.is_fitted = True
         new_hbr_model.pymc_model = new_hbr_model_model
+        new_hbr_model._parameter_dimensions = {
+            name: int(np.size(value))
+            for name, value in new_hbr_model_model.initial_point().items()
+        }
         new_hbr_model.be_maps = be_maps
         return new_hbr_model
 
@@ -596,6 +726,7 @@ class HBR(RegressionModel):
         if is_fitted and (path is not None):
             idata_path = os.path.join(path, "idata.nc")
             self.load_idata(idata_path)
+        self._parameter_dimensions = my_dict.get("_parameter_dimensions")
         self.be_maps = my_dict["be_maps"]
         return self
 

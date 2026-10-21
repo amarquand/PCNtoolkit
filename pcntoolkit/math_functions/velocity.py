@@ -57,12 +57,6 @@ def compute_correlation_matrix(
     xr.DataArray
         Correlations of shape ``[n_response_vars, n_ages, n_ages]`` with dims
         ``(response_vars, f"{covariate_name}_1", f"{covariate_name}_2")``.
-
-    Raises
-    ------
-    ValueError
-        If the data is cross-sectional, or if no pair of ages within
-        ``bandwidth`` has at least 4 subjects scanned at both ages.
     """
     # Flatten the xarray dataset into one table per observation.
     df = data.to_dataframe()[["X", "Z", "batch_effects", "subject_ids"]].droplevel(
@@ -96,8 +90,6 @@ def compute_correlation_matrix(
     # Start from the identity (a subject is perfectly correlated with itself).
     cors = np.tile(np.eye(max_age + 1), (n_responsevars, 1, 1))
 
-    # Count the age pairs with enough subjects to estimate a correlation.
-    n_estimated = 0
     # Visit all age pairs that fall within the requested bandwidth.
     for age1, age2 in offset_indices(max_age, bandwidth):
         # Match the same subjects observed at both ages.
@@ -109,7 +101,6 @@ def compute_correlation_matrix(
         )
         # Only estimate a correlation when enough paired subjects exist.
         if len(merged) >= 4:
-            n_estimated += 1
             # Compute one correlation per response variable.
             for i, rv in enumerate(response_vars):
                 cors[i, age2, age1] = cors[i, age1, age2] = merged[f"{rv}_x"].corr(
@@ -118,15 +109,6 @@ def compute_correlation_matrix(
         # Mark sparse age pairs as missing so regression can fill them.
         elif age1 != age2:
             cors[:, age2, age1] = cors[:, age1, age2] = np.nan
-
-    # Without a single estimated correlation, the regression below has
-    # nothing to learn from.
-    if n_estimated == 0:
-        raise ValueError(
-            "Cannot compute correlation matrix: no pair of ages has at least "
-            "4 subjects scanned at both ages. Use more longitudinal subjects, "
-            "or load a precomputed matrix with CorrelationMatrix.load()."
-        )
 
     # Fill sparse off-diagonal entries using the regression model.
     newcors = fill_missing(bandwidth, cors)
@@ -196,16 +178,9 @@ def fill_missing(bandwidth: int, cors: np.ndarray) -> np.ndarray:
         )
         # Predict Fisher correlations for every allowed age pair.
         y_pred = regmodel.predict(Phi.drop(columns="y"))
-        # List the age pairs in the same order as the rows of Phi:
-        # first all pairs 1 year apart, then all pairs 2 years apart, etc.
-        pairs = [
-            (age1, age1 + offset)
-            for offset in range(1, bandwidth + 1)
-            for age1 in range(max_age - offset + 1)
-        ]
-        # Put each predicted correlation in the cell of its age pair.
-        for (age1, age2), y in zip(pairs, y_pred.ravel(), strict=True):
-            newcors[rv, age1, age2] = newcors[rv, age2, age1] = y
+        # Write the predictions symmetrically into the matrix.
+        for i, (age1, age2) in enumerate(offset_indices(max_age, bandwidth)):
+            newcors[rv, age1, age2] = newcors[rv, age2, age1] = y_pred[i].item()
     # Inverse Fisher transform (tanh)
     # Convert predicted Fisher values back to ordinary correlations.
     return np.tanh(newcors)
@@ -386,7 +361,7 @@ def compute_thrivelines(
         Covariate step between the two timepoints on each segment (e.g. 1 year).
     z_thrive : float, default -1.96
         Shrinkage term passed through to ``propagate``.
-    propagate : callable, default ``propagate_thriveline_z``
+    propagate : callable, default :func:`propagate_thriveline_z`
         Function that propagates z-scores along one segment:
         ``propagate(hop_correlations, start_z, z_thrive) -> xr.DataArray``.
         The default implements the update of Bayer et al. (2026); alternative
@@ -396,7 +371,7 @@ def compute_thrivelines(
     centiles : array-like of float, optional
         Centiles (between 0 and 1) where thrivelines start. Defaults to
         ``[0.05, 0.25, 0.5, 0.75, 0.95]``, the same centiles that
-        ``plot_thrivelines`` draws by default, so
+        :func:`~pcntoolkit.util.plotter.plot_thrivelines` draws by default, so
         every thriveline starts on a plotted centile curve.
     covariate_range : tuple of int, optional
         ``(min, max)`` covariate bounds used to slice ``R`` and place grid
@@ -408,7 +383,7 @@ def compute_thrivelines(
         Propagated z-scores and covariate coordinates, both with dimensions
         ``(segment, response_vars, offset)``. Each segment is one anchor pair
         propagated over ``timepoint_diff``; segments with missing or zero
-        correlations are left as NaN and trigger a ``UserWarning``.
+        correlations are left as NaN and trigger a :class:`UserWarning`.
 
     Raises
     ------
@@ -571,9 +546,9 @@ def compute_thriveline_y(
         Fitted normative model providing scalers and regional ``backward``
         maps.
     thrive_Z : xr.DataArray or xr.Dataset
-        Propagated z-scores from ``compute_thrivelines``, with dimensions
+        Propagated z-scores from :func:`compute_thrivelines`, with dimensions
         ``(segment, response_vars, offset)``. When an ``xr.Dataset`` is
-        passed (e.g. from ``ZGainScore.get_thrivelines``),
+        passed (e.g. from :meth:`~pcntoolkit.longitudinal_score.zgain_score.ZGainScore.get_thrivelines`),
         it must contain data variables ``Z`` and ``X``; ``thrive_X`` may then
         be omitted.
     thrive_X : xr.DataArray, optional
@@ -588,7 +563,7 @@ def compute_thriveline_y(
         (e.g. ``{"site": "A"}``). When omitted or incomplete, missing keys
         are filled from the first allowed level in
         ``model.unique_batch_effects`` (same rule as
-        ``plot_thrivelines``). Ignored when
+        :func:`~pcntoolkit.util.plotter.plot_thrivelines`). Ignored when
         the model has no batch effects.
 
     Returns
@@ -726,7 +701,7 @@ def thrivelines_to_dataframe(
     ----------
     thrive_Z, thrive_X, thrive_Y : xr.DataArray
         Arrays with dimensions ``(segment, response_vars, offset)`` as returned
-        by ``compute_thrivelines`` and ``compute_thriveline_y``.
+        by :func:`compute_thrivelines` and :func:`compute_thriveline_y`.
 
     Returns
     -------
@@ -803,7 +778,7 @@ def _resolve_reference_batch_effects(
 
     Explicit entries in ``batch_effects`` override the default. Otherwise each
     dimension uses the first allowed level in ``model.unique_batch_effects``
-    (same rule as ``plot_thrivelines``).
+    (same rule as :func:`~pcntoolkit.util.plotter.plot_thrivelines`).
     """
     if not model.unique_batch_effects:
         return {}
@@ -823,7 +798,7 @@ def _encode_batch_effects(
     """Build a model-encoded batch-effect array for thriveline backward passes.
 
     Each thriveline segment is evaluated at the reference batch effect resolved
-    by ``_resolve_reference_batch_effects``.
+    by :func:`_resolve_reference_batch_effects`.
     """
     if not model.unique_batch_effects:
         return None

@@ -42,13 +42,7 @@ What you will learn
     from scipy import stats
     
     import pcntoolkit.util.output
-    from pcntoolkit import (
-        CorrelationMatrix,
-        ZDiffScore,
-        ZGainScore,
-        fetch_example_correlation_matrix,
-        load_lnm,
-    )
+    from pcntoolkit import ZDiffScore, ZGainScore, load_correlation_matrix, load_lnm
     from pcntoolkit.util.plotter import plot_thrivelines
     
     # Hide PCNtoolkit's "Process: ..." progress messages
@@ -195,7 +189,58 @@ the example correlation matrix covers only that one.
     controls = load_lnm(group="control").sel(response_vars=[REGION])
     patients = load_lnm(group="patient").sel(response_vars=[REGION])
 
-2. Fit and transfer a normative model
+2. The correlation matrix
+-------------------------
+
+z-gain and thrivelines need an age-by-age correlation matrix: how
+strongly a person’s z-score at one age is related to their z-score at
+another age.
+
+A reliable matrix needs thousands of people scanned repeatedly, so we
+recommend reusing a precomputed one. The one we use in this tutorial was
+estimated by `Bayer et al. (2026) <https://arxiv.org/abs/2601.07591>`__
+in thousands of subjects, each scanned two or more times.
+
+Note that the correlation matrix does not have to come from the same
+data as your normative model.
+
+.. code:: ipython3
+
+    corr = load_correlation_matrix()
+    matrix = corr.matrix.sel(response_vars=REGION)
+    
+    age = 25
+    gaps = np.arange(0, 13)
+    
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5), gridspec_kw={"width_ratios": [1.1, 1]})
+    image = axes[0].imshow(matrix.values, origin="lower", cmap="viridis", vmin=0, vmax=1)
+    axes[0].set_xlabel("Age at scan B")
+    axes[0].set_ylabel("Age at scan A")
+    axes[0].set_title("Correlation of z-scores between ages")
+    axes[0].grid(False)
+    fig.colorbar(image, ax=axes[0], label="correlation")
+    
+    axes[1].plot(gaps, [corr.get(REGION, age, age + gap) for gap in gaps], marker="o")
+    axes[1].set_xlabel(f"Years after age {age}")
+    axes[1].set_ylabel("correlation")
+    axes[1].set_title(f"Correlation with the z-score at age {age}")
+    axes[1].set_ylim(-0.05, 1.05)
+    plt.tight_layout()
+    plt.show()
+
+
+
+.. image:: 14_longitudinal_modelling_files/14_longitudinal_modelling_8_0.png
+
+
+We see that the correlations are strongest on the diagonal and fade as
+scans get further apart in time.
+
+Also we see that the matrix only holds correlations for scans up to 10
+years apart and sets everything beyond that to 0. The two visits in our
+``LNM_data.csv`` are 1–3 years apart, well within that range.
+
+3. Fit and transfer a normative model
 -------------------------------------
 
 Longitudinal modelling starts from an ordinary normative model, so we
@@ -260,60 +305,6 @@ the LNM site, which the model has never seen.
     # Get a z-score for every visit of the reference controls and the patients
     lnm_model.predict(reference_controls);
     lnm_model.predict(patients);
-
-3. Load the correlation matrix
-------------------------------
-
-z-gain and thrivelines need an age-by-age correlation matrix: how
-strongly a person’s z-score at one age is related to their z-score at
-another age.
-
-A reliable matrix needs thousands of people scanned repeatedly, so we
-recommend reusing a precomputed one. The one we use in this tutorial was
-estimated by `Bayer et al. (2026) <https://arxiv.org/abs/2601.07591>`__
-in thousands of subjects, each scanned two or more times.
-
-Note that the correlation matrix does not have to come from the same
-data as your normative model.
-
-.. code:: ipython3
-
-    # Download the example correlation matrix from GitHub
-    corr_path = fetch_example_correlation_matrix()
-    # Load the correlation matrix from the downloaded CSV
-    corr = CorrelationMatrix.load(corr_path)
-    matrix = corr.matrix.sel(response_vars=REGION)
-    
-    age = 25
-    gaps = np.arange(0, 13)
-    
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5), gridspec_kw={"width_ratios": [1.1, 1]})
-    image = axes[0].imshow(matrix.values, origin="lower", cmap="viridis", vmin=0, vmax=1)
-    axes[0].set_xlabel("Age at scan B")
-    axes[0].set_ylabel("Age at scan A")
-    axes[0].set_title("Correlation of z-scores between ages")
-    axes[0].grid(False)
-    fig.colorbar(image, ax=axes[0], label="correlation")
-    
-    axes[1].plot(gaps, [corr.get(REGION, age, age + gap) for gap in gaps], marker="o")
-    axes[1].set_xlabel(f"Years after age {age}")
-    axes[1].set_ylabel("correlation")
-    axes[1].set_title(f"Correlation with the z-score at age {age}")
-    axes[1].set_ylim(-0.05, 1.05)
-    plt.tight_layout()
-    plt.show()
-
-
-
-.. image:: 14_longitudinal_modelling_files/14_longitudinal_modelling_12_0.png
-
-
-We see that the correlations are strongest on the diagonal and fade as
-scans get further apart in time.
-
-Also we see that the matrix only holds correlations for scans up to 10
-years apart and sets everything beyond that to 0. The two visits in our
-``LNM_data.csv`` are 1–3 years apart, well within that range.
 
 4. z-diff vs z-gain
 -------------------
