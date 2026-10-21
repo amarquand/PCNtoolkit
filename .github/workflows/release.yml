@@ -5,6 +5,10 @@
 # Guards against non-release pushes (e.g. a backport
 # that edits a dependency) by checking whether the
 # tag v{version} already exists.
+#
+# Can also be started by hand ("Run workflow" in the
+# Actions tab), e.g. to retry a release that failed
+# because the CHANGES section was missing.
 
 name: Release
 
@@ -14,6 +18,7 @@ on:
       - master
     paths:
       - pyproject.toml
+  workflow_dispatch:
 
 permissions:
   # Required to create tags and GitHub Releases.
@@ -23,6 +28,9 @@ permissions:
 
 jobs:
   release:
+    # A manual run started on another branch (e.g. dev)
+    # must skip the release.yml.
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
 
     steps:
@@ -168,5 +176,8 @@ jobs:
             --head master \
             --title \
               "Merge master back to dev after $VERSION release" \
-            --body \
-              "Automatic sync of master into dev after the $VERSION release. If it conflicts, keep the dev version."
+            --body "Automatic sync of master into dev after the $VERSION release.
+
+          If it conflicts:
+          - pyproject.toml (version line): keep dev's version.
+          - CHANGES: keep both sections, in version order."
