@@ -47,19 +47,19 @@ class ZGainScore(LongitudinalScore):
         A fitted normative model.
     correlation_matrix : CorrelationMatrix
         Age-to-age z-score correlations, estimated with
-        ``CorrelationMatrix.compute``
+        :meth:`~pcntoolkit.math_functions.correlation_matrix.CorrelationMatrix.compute`
         or loaded from a saved file.
 
     Attributes
     ----------
     zgain : xr.DataArray | None
-        The most recent z-gain scores produced by ``score``. ``None`` until
-        ``score`` has been called at least once. It stores the same
-        ``xr.DataArray`` that ``score`` returns, so the result can be
+        The most recent z-gain scores produced by :meth:`score`. ``None`` until
+        :meth:`score` has been called at least once. It stores the same
+        ``xr.DataArray`` that :meth:`score` returns, so the result can be
         retrieved later even if the return value was not saved.
     thrivelines : pd.DataFrame | None
-        The most recent thrivelines produced by ``get_thrivelines``.
-        ``None`` until ``get_thrivelines`` has been called at least
+        The most recent thrivelines produced by :meth:`get_thrivelines`.
+        ``None`` until :meth:`get_thrivelines` has been called at least
         once. A long-form table with columns ``segment``, ``start_age``,
         ``start_z``, ``response_var``, ``offset``, ``X``, ``Z``, and ``Y``.
     """
@@ -94,13 +94,13 @@ class ZGainScore(LongitudinalScore):
     ) -> pd.DataFrame:
         """Estimate and cache thrivelines from this score's correlation matrix.
 
-        This wraps ``compute_thrivelines``
-        and ``compute_thriveline_y``. It
+        This wraps :func:`~pcntoolkit.math_functions.velocity.compute_thrivelines`
+        and :func:`~pcntoolkit.math_functions.velocity.compute_thriveline_y`. It
         propagates thrivelines in Z-space, then maps them to response-scale Y
-        via ``normative_model``. Covariates other than the thrive covariate
+        via :attr:`normative_model`. Covariates other than the thrive covariate
         are fixed to the midpoint of each covariate's range in the normative
         model, the same rule
-        ``plot_centiles`` uses when it is given no
+        :func:`~pcntoolkit.util.plotter.plot_centiles` uses when it is given no
         scatter data. Batch effects use the first allowed level from the
         normative model.
 
@@ -111,7 +111,7 @@ class ZGainScore(LongitudinalScore):
             segment (e.g. one year).
         z_thrive : float, default -1.96
             Shrinkage term passed to the thriveline propagation update.
-        propagate : callable, default ``propagate_thriveline_z``
+        propagate : callable, default :func:`~pcntoolkit.math_functions.velocity.propagate_thriveline_z`
             Function that propagates z-scores along one segment:
             ``propagate(hop_correlations, start_z, z_thrive) -> xr.DataArray``.
         anchor_step : int, default 1
@@ -119,7 +119,7 @@ class ZGainScore(LongitudinalScore):
         centiles : array-like of float, optional
             Centiles (between 0 and 1) where thrivelines start. Defaults to
             ``[0.05, 0.25, 0.5, 0.75, 0.95]``, the same centiles that
-            ``plot_thrivelines`` draws by
+            :func:`~pcntoolkit.util.plotter.plot_thrivelines` draws by
             default, so every thriveline starts on a plotted centile curve.
         covariate_range : tuple of int, optional
             ``(min, max)`` covariate bounds used to slice the correlation
@@ -140,7 +140,7 @@ class ZGainScore(LongitudinalScore):
         pd.DataFrame
             Long-form thriveline table with columns ``segment``, ``start_age``,
             ``start_z``, ``response_var``, ``offset``, ``X``, ``Z``, and ``Y``.
-            Stored on the instance as ``thrivelines``.
+            Stored on the instance as :attr:`thrivelines`.
 
         Raises
         ------
@@ -200,7 +200,7 @@ class ZGainScore(LongitudinalScore):
         -------
         xr.DataArray
             One z-gain score per subject and response variable. The same array
-            is also stored on the instance as ``zgain`` for later retrieval.
+            is also stored on the instance as :attr:`zgain` for later retrieval.
         """
         # Run checks
         self._check_is_predicted(score_data)
