@@ -5,12 +5,12 @@ Computing your own correlation matrix
 
    :download:`Download Jupyter notebook <notebooks/16_correlation_matrix.ipynb>`
 
-Velocity models (z-gain and thrivelines) need an age-to-age
-**correlation matrix** (how z-scores correlate between ages). In
-PCNtoolkit you can either load a precomputed correlation matrix
-(``CorrelationMatrix.load()``) or compute your own from the z-scores of
-your longitudinal data (``CorrelationMatrix.compute()``). In this
-tutorial we will compute one.
+Velocity models (z-gain scores and thrivelines) need a correlation
+matrix (how strongly do z-scores correlate between two timepoints). In
+this example the timepoints are ages. In PCNtoolkit you can either load
+a precomputed correlation matrix (``CorrelationMatrix.load()``) or
+compute your own from the z-scores of your longitudinal data
+(``CorrelationMatrix.compute()``). In this tutorial we will compute one.
 
 Our example dataset (``LNM_data.csv``) has cortical thickness for
 healthy controls and patients with early-stage schizophrenia, each
@@ -177,7 +177,7 @@ extrapolated.
 
 
 The diagonal is 1 by definition. The yellow band (1-year gaps, r ≈ 0.95)
-is the only gap with data, from some age pairs. The 2- and 3-years gaps
+is the only gap with data from some age pairs. The 2- and 3-years gaps
 are extrapolated and come out near −1. Ages below 18, where we have no
 data, are also extrapolated (bottom-left).
 
