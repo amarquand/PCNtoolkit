@@ -281,7 +281,7 @@ def plot_thrivelines(
         The model used to compute centile curves.
     thrivelines : pd.DataFrame
         Pre-computed thriveline table from
-        ``ZGainScore.get_thrivelines``.
+        ``VelocityModel.get_thrivelines``.
     centiles : list[float] | np.ndarray | None, optional
         Centiles to plot. If None, the model defaults are used.
     covariate : str | None, optional

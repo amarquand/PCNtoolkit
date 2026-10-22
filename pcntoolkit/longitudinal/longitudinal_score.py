@@ -20,7 +20,7 @@ class LongitudinalScore(ABC):
 
     A longitudinal score asks whether a subject changed over time more or less
     than a fitted normative model would expect. Concrete subclasses such as
-    ``ZDiffScore`` and ``ZGainScore`` define the exact scoring rule.
+    ``ZDiffScore`` and ``VelocityModel`` define the exact scoring rule.
 
     Parameters
     ----------

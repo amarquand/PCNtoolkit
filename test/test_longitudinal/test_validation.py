@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from pcntoolkit.dataio.norm_data import NormData
-from pcntoolkit.longitudinal_score.longitudinal_score import LongitudinalScore
+from pcntoolkit.longitudinal.longitudinal_score import LongitudinalScore
 
 
 @pytest.mark.parametrize(

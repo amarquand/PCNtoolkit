@@ -18,7 +18,7 @@ What you need
 
 1. **Longitudinal data**: at least two scans per person. Here: the LNM
    dataset (``LNM_data.csv``), loaded with ``load_lnm()``.
-2. **A correlation matrix** (for z-gain and thrivelines): load a
+2. **A correlation matrix** (used for velocity models): load a
    precomputed one (recommended, used here) or estimate one from your
    own longitudinal data (we have a separate tutorial for that; needs
    thousands of subjects with longitudinal data).
@@ -30,7 +30,8 @@ What you will learn
 -------------------
 
 - what a longitudinal dataset and a correlation matrix look like,
-- how to compute **z-diff** and **z-gain**, and whether they agree,
+- how to compute **z-diff** and **z-gain (velocity model)**, and whether
+  they agree,
 - when to use which score,
 - how to plot **thrivelines** on normative centiles.
 
@@ -44,8 +45,8 @@ What you will learn
     import pcntoolkit.util.output
     from pcntoolkit import (
         CorrelationMatrix,
+        VelocityModel,
         ZDiffScore,
-        ZGainScore,
         fetch_example_correlation_matrix,
         load_lnm,
     )
@@ -264,9 +265,9 @@ the LNM site, which the model has never seen.
 3. Load the correlation matrix
 ------------------------------
 
-z-gain and thrivelines need an age-by-age correlation matrix: how
-strongly a person’s z-score at one age is related to their z-score at
-another age.
+Velocity models (z-gain scores and thrivelines) need a correlation
+matrix (how strongly do z-scores correlate between two timepoints). In
+the loaded correlation matrix the timepoints are ages.
 
 A reliable matrix needs thousands of people scanned repeatedly, so we
 recommend reusing a precomputed one. The one we use in this tutorial was
@@ -359,29 +360,34 @@ both methods require longitudinal data and a fitted normative model.
 Which score should I use?
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-=================================== ================================
-You have…                           Use
-=================================== ================================
-Two visits, BLR or warped-BLR model ``ZDiffScore`` or ``ZGainScore``
-Want thrivelines                    ``ZGainScore``
-Three or more visits                ``ZGainScore``
-HBR model                           ``ZGainScore``
-=================================== ================================
++-----------------------------------+-----------------------------------+
+| You have…                         | Use                               |
++===================================+===================================+
+| Two visits, BLR or warped-BLR     | ``ZDiffScore`` or                 |
+| model                             | ``VelocityModel``                 |
++-----------------------------------+-----------------------------------+
+| Want thrivelines                  | ``VelocityModel``                 |
++-----------------------------------+-----------------------------------+
+| Three or more visits              | ``VelocityModel``                 |
++-----------------------------------+-----------------------------------+
+| HBR model                         | ``VelocityModel``                 |
++-----------------------------------+-----------------------------------+
 
 Computing the scores
 ~~~~~~~~~~~~~~~~~~~~
 
-Both scores work in two steps:
+Both methods work in two steps:
 
-1. **Create the score object** with what stays the same for everyone:
-   the normative model, plus the reference to compare against (z-diff:
-   the held-out controls; z-gain: the correlation matrix). Nothing is
-   computed yet.
+1. **Create the object** with what stays the same for everyone: the
+   normative model, plus the reference to compare against (z-diff: the
+   held-out controls; velocity model: the correlation matrix). Nothing
+   is computed yet.
 2. **Call ``.score(data)``** on the people you want to score.
+   ``ZDiffScore.score()`` returns z-diff; ``VelocityModel.score()``
+   returns z-gain.
 
-The z-gain object has a second method, ``.get_thrivelines()``, which
-reuses the same model and correlation matrix to draw thrivelines
-(section 6).
+``VelocityModel`` can do more than just scoring. For example, we can
+compute thrivelines.
 
 .. code:: ipython3
 
@@ -410,11 +416,11 @@ reuses the same model and correlation matrix to draw thrivelines
 
 .. code:: ipython3
 
-    # Create the ZGainScore object
-    zgain = ZGainScore(lnm_model, corr)
+    # Create the VelocityModel object
+    velocity = VelocityModel(lnm_model, corr)
     
-    # Compute zgain
-    zgain_patients = zgain.score(patients)
+    # Compute z-gain
+    zgain_patients = velocity.score(patients)
     # Display the first few z-gain scores for the specified region
     zgain_patients.sel(response_vars=REGION).to_series().head()
 
@@ -441,7 +447,7 @@ everything in one table.
     control_scores = pd.DataFrame(
         {
             "z_diff": zdiff.score(reference_controls).sel(response_vars=REGION).to_series(),
-            "z_gain": zgain.score(reference_controls).sel(response_vars=REGION).to_series(),
+            "z_gain": velocity.score(reference_controls).sel(response_vars=REGION).to_series(),
             "group": "control",
         }
     )
@@ -641,7 +647,7 @@ normal range:
 Below we draw the patient with the most negative z-gain (red) and the
 control with the most typical change (blue).
 
-``ZGainScore.get_thrivelines()`` computes the thrivelines from the
+``VelocityModel.get_thrivelines()`` computes the thrivelines from the
 correlation matrix, and ``plot_thrivelines()`` draws them on the
 normative model’s centile chart.
 
@@ -652,7 +658,7 @@ normative model’s centile chart.
     youngest, oldest = int(lnm_ages.min()), int(lnm_ages.max()) + 1
     
     # Compute thrivelines
-    thrivelines = zgain.get_thrivelines(
+    thrivelines = velocity.get_thrivelines(
         centiles=CENTILES, # the centiles at which thrivelines start
         covariate_range=(youngest, oldest),
     )

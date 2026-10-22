@@ -14,6 +14,8 @@ import xarray as xr
 
 from pcntoolkit.math_functions.velocity import compute_correlation_matrix
 
+from .longitudinal_score import LongitudinalScore
+
 # Import heavy toolkit types only during static type checking.
 if TYPE_CHECKING:
     from pcntoolkit.dataio.norm_data import NormData
@@ -46,10 +48,10 @@ class CorrelationMatrix:
 
     >>> corr = CorrelationMatrix.load("my_matrices/rh_G_front_middle_thickness.csv")
 
-    Either way, pass it to a score:
+    Either way, pass it to a velocity model:
 
-    >>> from pcntoolkit import ZGainScore
-    >>> zgain = ZGainScore(model, corr)
+    >>> from pcntoolkit import VelocityModel
+    >>> velocity = VelocityModel(model, corr)
 
     Parameters
     ----------
@@ -137,11 +139,6 @@ class CorrelationMatrix:
             If ``data`` has no predictions, is not longitudinal, or if
             ``max_correlation`` is out of range.
         """
-        # Imported here to avoid a circular import at module load.
-        from pcntoolkit.longitudinal_score.longitudinal_score import (
-            LongitudinalScore,
-        )
-
         LongitudinalScore._check_is_predicted(data)
         LongitudinalScore._check_is_longitudinal(data)
 
