@@ -40,7 +40,7 @@ follow the steps below to set your local development environment:
     it.
 
     ``` bash
-    conda create -n ptk-dev python=3.12
+    conda create -n ptk-dev python=3.13
     conda activate ptk-dev
     ```
 
