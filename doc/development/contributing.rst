@@ -40,12 +40,7 @@ You are always welcome to contribute code yourself. PCNtoolkit runs on Linux, Ma
     **Alternative quicker option:** To simplify and automate commands that are frequently used during development, we use `GNU Make <https://www.gnu.org/software/make/>`_. Common development tasks are defined as short scripts in the ``Makefile``. For example, steps 3 and 4 can be done with a single command: ``make dev-setup``. After it, you should activate the environment with ``conda activate ptk-dev``.
 
 .. note::
-    **Alternative without conda:** If you use `uv <https://docs.astral.sh/uv/>`_ instead of conda, ``make venv`` creates a virtual environment in the ``.venv`` folder with Python 3.12 and installs PCNtoolkit with the ``dev`` dependencies. If ``.venv`` exists, ``make venv`` replaces it. After it, activate the environment with ``source .venv/bin/activate`` on Linux and macOS, or with ``.venv\Scripts\activate`` on Windows (in Git Bash, use ``source .venv/Scripts/activate``). Without Make, run these commands:
-
-    .. code-block:: bash
-
-        uv venv --python 3.12 .venv
-        uv pip install --python .venv -e ".[dev]"
+    **Alternative without conda:** You can use `uv <https://docs.astral.sh/uv/>`_ instead of conda. You can run ``make uv-dev-setup`` to create the same virtual environment as conda, in the ``.ptk-dev`` folder. After it, activate the environment with ``source .ptk-dev/bin/activate`` on Linux and macOS, or with ``.ptk-dev\Scripts\activate`` on Windows.
 
 Congrats! You have now set up your development environment. 
 

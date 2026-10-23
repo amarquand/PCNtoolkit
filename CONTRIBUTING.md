@@ -66,19 +66,12 @@ follow the steps below to set your local development environment:
 > should activate the environment with `conda activate ptk-dev`.
 
 > **Note**
-> **Alternative without conda:** If you use
-> [uv](https://docs.astral.sh/uv/) instead of conda, `make venv` creates a
-> virtual environment in the `.venv` folder with Python 3.12 and installs
-> PCNtoolkit with the `dev` dependencies. If `.venv` exists, `make venv`
-> replaces it. After it, activate the environment with
-> `source .venv/bin/activate` on Linux and macOS, or with
-> `.venv\Scripts\activate` on Windows (in Git Bash, use
-> `source .venv/Scripts/activate`). Without Make, run these commands:
->
-> ``` bash
-> uv venv --python 3.12 .venv
-> uv pip install --python .venv -e ".[dev]"
-> ```
+> **Alternative without conda:** You can use
+> [uv](https://docs.astral.sh/uv/) instead of conda. You can run
+> `make uv-dev-setup` to create the same virtual environment as conda,
+> in the `.ptk-dev` folder. After it, activate the environment with
+> `source .ptk-dev/bin/activate` on Linux and macOS, or with
+> `.ptk-dev\Scripts\activate` on Windows.
 
 Congrats! You have now set up your development environment.
 
