@@ -203,7 +203,7 @@ class VelocityModel(LongitudinalScore):
             is also stored on the instance as ``zgain`` for later retrieval.
         """
         # Run checks
-        self._check_is_predicted(score_data)
+        self._check_is_predicted(score_data, required=("Z",))
         self._check_is_longitudinal(score_data)
 
         # Read response-variable names for the output array.

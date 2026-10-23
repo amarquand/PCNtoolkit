@@ -98,14 +98,18 @@ class LongitudinalScore(ABC):
     # ------------------------------------------------------------------ #
     # Validation functions
     # ------------------------------------------------------------------ #
+
     @staticmethod
-    def _check_is_predicted(data: NormData) -> None:
-        # Check the prediction fields needed by longitudinal scores.
-        for var in ("Yhat", "Z"):
+    def _check_is_predicted(data: NormData, *, required: tuple[str, ...]) -> None:
+        """Ensure that the required prediction outputs (e.g., 'Z'. 'Yhat') are present 
+        in the data."""
+        for var in required:
             # Stop if a required prediction output is missing.
             if var not in data.data_vars:
                 # Tell the user to run prediction before scoring.
-                raise ValueError(f"The data is missing '{var}'. Run model.predict(data) before computing longitudinal scores.")
+                raise ValueError(
+                    f"The data is missing '{var}'. Run model.predict(data) before computing longitudinal scores."
+                )
 
     @classmethod
     def _check_is_longitudinal(cls, data: NormData) -> None:
@@ -114,7 +118,9 @@ class LongitudinalScore(ABC):
         visits = data.get_visits()
 
         # Count rows and distinct visit labels per subject
-        grouped = pd.DataFrame({"subject": ids, "visit": visits}).groupby("subject", sort=False)["visit"]
+        grouped = pd.DataFrame({"subject": ids, "visit": visits}).groupby(
+            "subject", sort=False
+        )["visit"]
         n_rows = grouped.size()
         n_distinct_visits = grouped.nunique()
 
