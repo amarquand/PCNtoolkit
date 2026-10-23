@@ -16,28 +16,26 @@ Imports
 
 .. code:: ipython3
 
-    import warnings
     import logging
+    import warnings
     
-    
-    import pandas as pd
     import matplotlib.pyplot as plt
+    import numpy as np
+    import pandas as pd
+    import seaborn as sns
+    
+    import pcntoolkit.util.output
     from pcntoolkit import (
         HBR,
         BsplineBasisFunction,
+        NormalLikelihood,
         NormativeModel,
         NormData,
         load_fcon1000,
-        NormalLikelihood,
         make_prior,
         plot_centiles_advanced,
         plot_qq,
-        plot_ridge,
     )
-    
-    import numpy as np
-    import pcntoolkit.util.output
-    import seaborn as sns
     
     sns.set_style("darkgrid")
     
@@ -77,7 +75,13 @@ First we download a small example dataset from github.
     df = train.to_dataframe()
     fig, ax = plt.subplots(1, 2, figsize=(15, 5))
     
-    sns.countplot(data=df, y=("batch_effects", "site"), hue=("batch_effects", "sex"), ax=ax[0], orient="h")
+    sns.countplot(
+        data=df,
+        y=("batch_effects", "site"),
+        hue=("batch_effects", "sex"),
+        ax=ax[0],
+        orient="h",
+    )
     ax[0].legend(title="Sex")
     ax[0].set_title("Count of sites")
     ax[0].set_xlabel("Site")
@@ -169,22 +173,22 @@ B-spline
 
 A ``BsplineBasisFunction`` has three parameters:
 
--  ``basis_column``: which column of the covariate matrix ``X`` to
-   expand, counted from 0. In this tutorial ``X`` holds a single
-   covariate, age, so ``basis_column=0`` picks age; the remaining
-   columns of ``X`` are copied through unchanged. Point it at the
-   covariate whose effect you expect to curve.
--  ``nknots``: how many knots to place. A knot is an x-value where two
-   polynomial pieces of the spline are stitched together; by default
-   they are spread evenly over the observed range of the covariate. More
-   knots give the curve more freedom to wiggle and follow the data,
-   fewer knots give a smoother curve that is cheaper to estimate.
-   Increase ``nknots`` only when the effect really bends and your sample
-   size can support the extra parameters.
--  ``degree``: the polynomial order used between the knots. ``degree=1``
-   stitches straight segments, so the fitted curve has visible corners.
-   ``degree=3`` (the usual default) stitches cubic pieces, so both the
-   curve and its slope change smoothly.
+- ``basis_column``: which column of the covariate matrix ``X`` to
+  expand, counted from 0. In this tutorial ``X`` holds a single
+  covariate, age, so ``basis_column=0`` picks age; the remaining columns
+  of ``X`` are copied through unchanged. Point it at the covariate whose
+  effect you expect to curve.
+- ``nknots``: how many knots to place. A knot is an x-value where two
+  polynomial pieces of the spline are stitched together; by default they
+  are spread evenly over the observed range of the covariate. More knots
+  give the curve more freedom to wiggle and follow the data, fewer knots
+  give a smoother curve that is cheaper to estimate. Increase ``nknots``
+  only when the effect really bends and your sample size can support the
+  extra parameters.
+- ``degree``: the polynomial order used between the knots. ``degree=1``
+  stitches straight segments, so the fitted curve has visible corners.
+  ``degree=3`` (the usual default) stitches cubic pieces, so both the
+  curve and its slope change smoothly.
 
 The expanded covariate takes up ``nknots + degree - 1`` columns, so
 ``BsplineBasisFunction(degree=3, nknots=5)`` turns age into 7 columns.
@@ -262,7 +266,7 @@ NormalLikelihood, which we will use to model our response variable.
             # Mu is the mean of the intercept, which is normally distributed with a mean of 0 and a standard deviation of 1.
             mu=make_prior(dist_name="Normal", dist_params=(0.0, 1.0)),
             # Sigma is the scale at which the intercepts vary between sites and sexes.
-            sigma=make_prior(dist_name="Normal", dist_params=(0.0, 1.0))
+            sigma=make_prior(dist_name="Normal", dist_params=(0.0, 1.0)),
         ),
         # We use a B-spline basis function to allow for non-linearity in the mean.
         # basis_column=0 picks the covariate to expand (age here), and nknots=5 with
@@ -377,9 +381,16 @@ Let’s start with the centiles.
 
     plot_centiles_advanced(
         model,
-        centiles=[0.05, 0.5, 0.95],  # Plot these centiles, the default is [0.05, 0.25, 0.5, 0.75, 0.95]
+        centiles=[
+            0.05,
+            0.5,
+            0.95,
+        ],  # Plot these centiles, the default is [0.05, 0.25, 0.5, 0.75, 0.95]
         scatter_data=train,  # Scatter this data along with the centiles
-        batch_effects={"site": ["Beijing_Zang", "AnnArbor_a"], "sex": ["M"]},  # Highlight these groups
+        batch_effects={
+            "site": ["Beijing_Zang", "AnnArbor_a"],
+            "sex": ["M"],
+        },  # Highlight these groups
         show_other_data=True,  # scatter data not in those groups as smaller black circles
         harmonize_data=True,  # harmonize the scatterdata, this means that we 'remove' the batch effects from the data, by simulating what the data would have looked like if all data was from the same batch.
     )
@@ -592,12 +603,12 @@ What’s next?
 Now we have a normative hierarchical Bayesian regression model, we can
 use it to:
 
--  Make predictions on new data
--  Harmonize data, this means that we ‘remove’ the batch effects from
-   the data, by simulating what the data would have looked like if all
-   data was from the same batch.
--  Synthesize new data
--  Extend the model using data from new batches
+- Make predictions on new data
+- Harmonize data, this means that we ‘remove’ the batch effects from the
+  data, by simulating what the data would have looked like if all data
+  was from the same batch.
+- Synthesize new data
+- Extend the model using data from new batches
 
 Predicting
 ~~~~~~~~~~
@@ -622,8 +633,20 @@ Harmonize
     plt.style.use("seaborn-v0_8")
     df = test.to_dataframe()
     fig, ax = plt.subplots(1, 2, figsize=(13, 5), sharey=True)
-    sns.scatterplot(data=df, x=("X", "age"), y=("Y", feature_to_plot), hue=("batch_effects", "site"), ax=ax[0])
-    sns.scatterplot(data=df, x=("X", "age"), y=("Y_harmonized", feature_to_plot), hue=("batch_effects", "site"), ax=ax[1])
+    sns.scatterplot(
+        data=df,
+        x=("X", "age"),
+        y=("Y", feature_to_plot),
+        hue=("batch_effects", "site"),
+        ax=ax[0],
+    )
+    sns.scatterplot(
+        data=df,
+        x=("X", "age"),
+        y=("Y_harmonized", feature_to_plot),
+        hue=("batch_effects", "site"),
+        ax=ax[1],
+    )
     ax[0].title.set_text("Unharmonized")
     ax[1].title.set_text("Harmonized")
     ax[0].legend([], [])
@@ -661,7 +684,9 @@ site B.
 .. code:: ipython3
 
     # Generate 10000 synthetic datapoints from scratch
-    synthetic_data = model.synthesize(covariate_range_per_batch_effect=True, n_samples=10000)  # <- also easy
+    synthetic_data = model.synthesize(
+        covariate_range_per_batch_effect=True, n_samples=10000
+    )  # <- also easy
     # Show the synthetic data along with the centiles
     plot_centiles_advanced(
         model,
