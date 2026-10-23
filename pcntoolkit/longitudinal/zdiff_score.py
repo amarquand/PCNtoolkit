@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from os import PathLike
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -38,9 +39,9 @@ class ZDiffScore(LongitudinalScore):
     Attributes
     ----------
     zdiff : xr.DataArray | None
-        The most recent z-diff scores produced by :meth:`score`. ``None`` until
-        :meth:`score` has been called at least once. It stores the same
-        ``xr.DataArray`` that :meth:`score` returns, so the result can be
+        The most recent z-diff scores produced by ``score``. ``None`` until
+        ``score`` has been called at least once. It stores the same
+        ``xr.DataArray`` that ``score`` returns, so the result can be
         retrieved later even if the return value was not saved.
     """
 
@@ -51,12 +52,11 @@ class ZDiffScore(LongitudinalScore):
     ) -> None:
         # Reuse the shared setup from the base class.
         super().__init__(normative_model, reference_data)
-        # Unlike ZGainScore, this score reads the reference cohort at scoring
+        # Unlike VelocityModel, this score reads the reference cohort at scoring
         # time to estimate the spread of expected change.
         if reference_data is None:
             raise ValueError(
-                "ZDiffScore needs a longitudinal reference cohort to estimate "
-                "the typical size of change. Pass reference_data."
+                "ZDiffScore needs a longitudinal reference cohort to estimate the typical size of change. Pass reference_data."
             )
         # z-diff is defined only for BLR models.
         self._check_model_is_blr(normative_model)
@@ -64,7 +64,11 @@ class ZDiffScore(LongitudinalScore):
         # Hold the most recent z-diff scores; filled in by score().
         self.zdiff: xr.DataArray | None = None
 
-    def score(self, score_data: NormData) -> xr.DataArray:
+    def score(
+        self,
+        score_data: NormData,
+        save_path: str | PathLike[str] | None = None,
+    ) -> xr.DataArray:
         """Compute the z-diff score for every subject in ``score_data``.
 
         Parameters
@@ -73,12 +77,21 @@ class ZDiffScore(LongitudinalScore):
             Longitudinal cohort with exactly two visits per subject, numeric
             visit labels on the NormData object, and predictions already
             computed.
+        save_path : str | PathLike[str] | None, optional
+            If set, write scores to this CSV path, one row per subject and
+            one column per response variable. Opened as a table, it looks
+            like::
+
+                subjects  lh_thickness  rh_thickness
+                sub-01            0.42         -1.10
+                sub-02           -0.35          0.87
+                sub-03            2.13          1.95
 
         Returns
         -------
         xr.DataArray
             One z-diff score per subject and response variable. The same array
-            is also stored on the instance as :attr:`zdiff` for later retrieval.
+            is also stored on the instance as ``zdiff`` for later retrieval.
         """
         # Run checks first for both the reference and score data.
         self._check_is_predicted(self.reference_data)
@@ -117,10 +130,7 @@ class ZDiffScore(LongitudinalScore):
             denominator = np.sqrt(float(np.mean(delta_reference_values**2)))
             # Reject the degenerate case of no expected change at all.
             if np.isclose(denominator, 0.0):
-                raise ValueError(
-                    f"Cannot estimate denominator for '{rv}': "
-                    "reference_data has zero residual-change variability."
-                )
+                raise ValueError(f"Cannot estimate denominator for '{rv}': reference_data has zero residual-change variability.")
 
             # Compute the change for each target subject (score_data).
             # Mathematically this Δr_target.
@@ -140,6 +150,8 @@ class ZDiffScore(LongitudinalScore):
             coords={"subjects": subjects, "response_vars": response_vars},
             name="zdiff",
         )
+        if save_path is not None:
+            self._save_scores_csv(self.zdiff, save_path)
         return self.zdiff
 
     # ------------------------------------------------------------------ #
@@ -223,7 +235,7 @@ class ZDiffScore(LongitudinalScore):
             # Tell the user to switch to z-gain for longer trajectories.
             raise ValueError(
                 "ZDiffScore supports at most two visits per subject. "
-                "Some subjects have more than two visits. You can use ZGainScore "
+                "Some subjects have more than two visits. You can use VelocityModel "
                 "for three or more visits."
             )
 
@@ -235,6 +247,5 @@ class ZDiffScore(LongitudinalScore):
         if not isinstance(template, BLR):
             # Explain that z-diff is only defined for BLR models here.
             raise ValueError(
-                "ZDiffScore requires a BLR (or warped BLR) normative model. "
-                "Use ZGainScore for other regression models."
+                "ZDiffScore requires a BLR (or warped BLR) normative model. Use VelocityModel for other regression models."
             )

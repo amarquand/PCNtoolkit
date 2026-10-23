@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from os import PathLike
+from pathlib import Path
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 import pandas as pd
@@ -18,7 +20,7 @@ class LongitudinalScore(ABC):
 
     A longitudinal score asks whether a subject changed over time more or less
     than a fitted normative model would expect. Concrete subclasses such as
-    ``ZDiffScore`` and ``ZGainScore`` define the exact scoring rule.
+    ``ZDiffScore`` and ``VelocityModel`` define the exact scoring rule.
 
     Parameters
     ----------
@@ -42,7 +44,11 @@ class LongitudinalScore(ABC):
         normative_model.check_is_fitted()
 
     @abstractmethod
-    def score(self, score_data: NormData) -> xr.DataArray:
+    def score(
+        self,
+        score_data: NormData,
+        save_path: str | PathLike[str] | None = None,
+    ) -> xr.DataArray:
         """Score subjects in ``score_data``.
 
         Parameters
@@ -50,12 +56,39 @@ class LongitudinalScore(ABC):
         score_data : NormData
             Longitudinal cohort to score. Must include numeric visit labels
             via ``NormData.from_dataframe(..., visits='<column>')``.
+        save_path : str | PathLike[str] | None, optional
+            If set, write scores to this CSV path in wide format: one row per
+            subject and one column per response variable.
 
         Returns
         -------
         xr.DataArray
             One longitudinal score per subject and response variable.
         """
+
+    @staticmethod
+    def _save_scores_csv(
+        scores: xr.DataArray,
+        save_path: str | PathLike[str],
+    ) -> None:
+        """Write subject-level scores as a wide CSV (one row per subject)."""
+        path = Path(save_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        # Convert a DataArray to a wide-format DataFrame.
+        wide = cast(pd.DataFrame, scores.to_pandas()).reset_index()
+        # Save as csv
+        wide.to_csv(path, index=False)
+
+    @staticmethod
+    def _save_dataframe_csv(
+        frame: pd.DataFrame,
+        save_path: str | PathLike[str],
+    ) -> None:
+        """Write a DataFrame to CSV. Currently used for saving thrivelines."""
+        path = Path(save_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        # Save as csv
+        frame.to_csv(path, index=False)
 
     @staticmethod
     def _ordered_unique(values: np.ndarray) -> np.ndarray:
@@ -72,11 +105,7 @@ class LongitudinalScore(ABC):
             # Stop if a required prediction output is missing.
             if var not in data.data_vars:
                 # Tell the user to run prediction before scoring.
-                raise ValueError(
-                    f"The data is missing '{var}'. "
-                    "Run model.predict(data) before computing "
-                    "longitudinal scores."
-                )
+                raise ValueError(f"The data is missing '{var}'. Run model.predict(data) before computing longitudinal scores.")
 
     @classmethod
     def _check_is_longitudinal(cls, data: NormData) -> None:
@@ -85,9 +114,7 @@ class LongitudinalScore(ABC):
         visits = data.get_visits()
 
         # Count rows and distinct visit labels per subject
-        grouped = pd.DataFrame({"subject": ids, "visit": visits}).groupby(
-            "subject", sort=False
-        )["visit"]
+        grouped = pd.DataFrame({"subject": ids, "visit": visits}).groupby("subject", sort=False)["visit"]
         n_rows = grouped.size()
         n_distinct_visits = grouped.nunique()
 

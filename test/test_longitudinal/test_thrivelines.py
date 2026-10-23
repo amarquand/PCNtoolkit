@@ -1,4 +1,5 @@
-"""Tests for thriveline utilities, ZGainScore.get_thrivelines, and plot_thrivelines."""
+"""Tests for thriveline utilities, VelocityModel.get_thrivelines, and
+plot_thrivelines."""
 
 from __future__ import annotations
 
@@ -12,7 +13,7 @@ import pytest
 import xarray as xr
 from scipy.stats import norm
 
-from pcntoolkit.longitudinal_score.zgain_score import ZGainScore
+from pcntoolkit.longitudinal.velocity_model import VelocityModel
 from pcntoolkit.math_functions.velocity import (
     _resolve_reference_batch_effects,
     compute_thrivelines,
@@ -92,7 +93,7 @@ def test_thrivelines_to_dataframe_multiple_response_vars(
 def test_zgain_get_thrivelines_overwrites_cache(
     fitted_norm_blr_model, blr_correlation_matrix
 ):
-    scorer = ZGainScore(fitted_norm_blr_model, blr_correlation_matrix)
+    scorer = VelocityModel(fitted_norm_blr_model, blr_correlation_matrix)
     first = scorer.get_thrivelines(centiles=[0.5], covariate_range=(0, 1))
     second = scorer.get_thrivelines(centiles=[0.84, 0.98], covariate_range=(0, 2))
     assert scorer.thrivelines is second
@@ -300,7 +301,7 @@ def test_thrivelines_to_dataframe_long_format(correlation_matrix_array_factory):
 def test_zgain_get_thrivelines_returns_dataframe(
     fitted_norm_blr_model, blr_correlation_matrix
 ):
-    scorer = ZGainScore(fitted_norm_blr_model, blr_correlation_matrix)
+    scorer = VelocityModel(fitted_norm_blr_model, blr_correlation_matrix)
     thrivelines = scorer.get_thrivelines(
         centiles=[0.5, 0.84],
         covariate_range=(0, 2),
@@ -320,11 +321,28 @@ def test_zgain_get_thrivelines_returns_dataframe(
     assert not thrivelines.empty
 
 
+def test_zgain_get_thrivelines_saved_csv_matches_returned_dataframe(
+    tmp_path, fitted_norm_blr_model, blr_correlation_matrix
+):
+    scorer = VelocityModel(fitted_norm_blr_model, blr_correlation_matrix)
+    save_path = tmp_path / "thrivelines.csv"
+
+    thrivelines = scorer.get_thrivelines(
+        centiles=[0.5, 0.84],
+        covariate_range=(0, 2),
+        save_path=save_path,
+    )
+
+    saved = pd.read_csv(save_path)
+    # Compare contents only: ignore column order
+    pd.testing.assert_frame_equal(saved, thrivelines, check_like=True)
+
+
 def test_plot_thrivelines_returns_figures(
     fitted_norm_blr_model,
     blr_correlation_matrix,
 ):
-    scorer = ZGainScore(fitted_norm_blr_model, blr_correlation_matrix)
+    scorer = VelocityModel(fitted_norm_blr_model, blr_correlation_matrix)
     thrivelines = scorer.get_thrivelines(
         centiles=[0.5],
         covariate_range=(0, 2),

@@ -18,7 +18,7 @@ What you need
 
 1. **Longitudinal data**: at least two scans per person. Here: the LNM
    dataset (``LNM_data.csv``), loaded with ``load_lnm()``.
-2. **A correlation matrix** (for z-gain and thrivelines): load a
+2. **A correlation matrix** (used for velocity models): load a
    precomputed one (recommended, used here) or estimate one from your
    own longitudinal data (we have a separate tutorial for that; needs
    thousands of subjects with longitudinal data).
@@ -30,7 +30,8 @@ What you will learn
 -------------------
 
 - what a longitudinal dataset and a correlation matrix look like,
-- how to compute **z-diff** and **z-gain**, and whether they agree,
+- how to compute **z-diff** and **z-gain (velocity model)**, and whether
+  they agree,
 - when to use which score,
 - how to plot **thrivelines** on normative centiles.
 
@@ -42,7 +43,13 @@ What you will learn
     from scipy import stats
     
     import pcntoolkit.util.output
-    from pcntoolkit import ZDiffScore, ZGainScore, load_correlation_matrix, load_lnm
+    from pcntoolkit import (
+        CorrelationMatrix,
+        VelocityModel,
+        ZDiffScore,
+        fetch_example_correlation_matrix,
+        load_lnm,
+    )
     from pcntoolkit.util.plotter import plot_thrivelines
     
     # Hide PCNtoolkit's "Process: ..." progress messages
@@ -189,58 +196,7 @@ the example correlation matrix covers only that one.
     controls = load_lnm(group="control").sel(response_vars=[REGION])
     patients = load_lnm(group="patient").sel(response_vars=[REGION])
 
-2. The correlation matrix
--------------------------
-
-z-gain and thrivelines need an age-by-age correlation matrix: how
-strongly a person’s z-score at one age is related to their z-score at
-another age.
-
-A reliable matrix needs thousands of people scanned repeatedly, so we
-recommend reusing a precomputed one. The one we use in this tutorial was
-estimated by `Bayer et al. (2026) <https://arxiv.org/abs/2601.07591>`__
-in thousands of subjects, each scanned two or more times.
-
-Note that the correlation matrix does not have to come from the same
-data as your normative model.
-
-.. code:: ipython3
-
-    corr = load_correlation_matrix()
-    matrix = corr.matrix.sel(response_vars=REGION)
-    
-    age = 25
-    gaps = np.arange(0, 13)
-    
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5), gridspec_kw={"width_ratios": [1.1, 1]})
-    image = axes[0].imshow(matrix.values, origin="lower", cmap="viridis", vmin=0, vmax=1)
-    axes[0].set_xlabel("Age at scan B")
-    axes[0].set_ylabel("Age at scan A")
-    axes[0].set_title("Correlation of z-scores between ages")
-    axes[0].grid(False)
-    fig.colorbar(image, ax=axes[0], label="correlation")
-    
-    axes[1].plot(gaps, [corr.get(REGION, age, age + gap) for gap in gaps], marker="o")
-    axes[1].set_xlabel(f"Years after age {age}")
-    axes[1].set_ylabel("correlation")
-    axes[1].set_title(f"Correlation with the z-score at age {age}")
-    axes[1].set_ylim(-0.05, 1.05)
-    plt.tight_layout()
-    plt.show()
-
-
-
-.. image:: 14_longitudinal_modelling_files/14_longitudinal_modelling_8_0.png
-
-
-We see that the correlations are strongest on the diagonal and fade as
-scans get further apart in time.
-
-Also we see that the matrix only holds correlations for scans up to 10
-years apart and sets everything beyond that to 0. The two visits in our
-``LNM_data.csv`` are 1–3 years apart, well within that range.
-
-3. Fit and transfer a normative model
+2. Fit and transfer a normative model
 -------------------------------------
 
 Longitudinal modelling starts from an ordinary normative model, so we
@@ -306,6 +262,60 @@ the LNM site, which the model has never seen.
     lnm_model.predict(reference_controls);
     lnm_model.predict(patients);
 
+3. Load the correlation matrix
+------------------------------
+
+Velocity models (z-gain scores and thrivelines) need a correlation
+matrix (how strongly do z-scores correlate between two timepoints). In
+the loaded correlation matrix the timepoints are ages.
+
+A reliable matrix needs thousands of people scanned repeatedly, so we
+recommend reusing a precomputed one. The one we use in this tutorial was
+estimated by `Bayer et al. (2026) <https://arxiv.org/abs/2601.07591>`__
+in thousands of subjects, each scanned two or more times.
+
+Note that the correlation matrix does not have to come from the same
+data as your normative model.
+
+.. code:: ipython3
+
+    # Download the example correlation matrix from GitHub
+    corr_path = fetch_example_correlation_matrix()
+    # Load the correlation matrix from the downloaded CSV
+    corr = CorrelationMatrix.load(corr_path)
+    matrix = corr.matrix.sel(response_vars=REGION)
+    
+    age = 25
+    gaps = np.arange(0, 13)
+    
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5), gridspec_kw={"width_ratios": [1.1, 1]})
+    image = axes[0].imshow(matrix.values, origin="lower", cmap="viridis", vmin=0, vmax=1)
+    axes[0].set_xlabel("Age at scan B")
+    axes[0].set_ylabel("Age at scan A")
+    axes[0].set_title("Correlation of z-scores between ages")
+    axes[0].grid(False)
+    fig.colorbar(image, ax=axes[0], label="correlation")
+    
+    axes[1].plot(gaps, [corr.get(REGION, age, age + gap) for gap in gaps], marker="o")
+    axes[1].set_xlabel(f"Years after age {age}")
+    axes[1].set_ylabel("correlation")
+    axes[1].set_title(f"Correlation with the z-score at age {age}")
+    axes[1].set_ylim(-0.05, 1.05)
+    plt.tight_layout()
+    plt.show()
+
+
+
+.. image:: 14_longitudinal_modelling_files/14_longitudinal_modelling_12_0.png
+
+
+We see that the correlations are strongest on the diagonal and fade as
+scans get further apart in time.
+
+Also we see that the matrix only holds correlations for scans up to 10
+years apart and sets everything beyond that to 0. The two visits in our
+``LNM_data.csv`` are 1–3 years apart, well within that range.
+
 4. z-diff vs z-gain
 -------------------
 
@@ -350,29 +360,34 @@ both methods require longitudinal data and a fitted normative model.
 Which score should I use?
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-=================================== ================================
-You have…                           Use
-=================================== ================================
-Two visits, BLR or warped-BLR model ``ZDiffScore`` or ``ZGainScore``
-Want thrivelines                    ``ZGainScore``
-Three or more visits                ``ZGainScore``
-HBR model                           ``ZGainScore``
-=================================== ================================
++-----------------------------------+-----------------------------------+
+| You have…                         | Use                               |
++===================================+===================================+
+| Two visits, BLR or warped-BLR     | ``ZDiffScore`` or                 |
+| model                             | ``VelocityModel``                 |
++-----------------------------------+-----------------------------------+
+| Want thrivelines                  | ``VelocityModel``                 |
++-----------------------------------+-----------------------------------+
+| Three or more visits              | ``VelocityModel``                 |
++-----------------------------------+-----------------------------------+
+| HBR model                         | ``VelocityModel``                 |
++-----------------------------------+-----------------------------------+
 
 Computing the scores
 ~~~~~~~~~~~~~~~~~~~~
 
-Both scores work in two steps:
+Both methods work in two steps:
 
-1. **Create the score object** with what stays the same for everyone:
-   the normative model, plus the reference to compare against (z-diff:
-   the held-out controls; z-gain: the correlation matrix). Nothing is
-   computed yet.
+1. **Create the object** with what stays the same for everyone: the
+   normative model, plus the reference to compare against (z-diff: the
+   held-out controls; velocity model: the correlation matrix). Nothing
+   is computed yet.
 2. **Call ``.score(data)``** on the people you want to score.
+   ``ZDiffScore.score()`` returns z-diff; ``VelocityModel.score()``
+   returns z-gain.
 
-The z-gain object has a second method, ``.get_thrivelines()``, which
-reuses the same model and correlation matrix to draw thrivelines
-(section 6).
+``VelocityModel`` can do more than just scoring. For example, we can
+compute thrivelines.
 
 .. code:: ipython3
 
@@ -401,11 +416,11 @@ reuses the same model and correlation matrix to draw thrivelines
 
 .. code:: ipython3
 
-    # Create the ZGainScore object
-    zgain = ZGainScore(lnm_model, corr)
+    # Create the VelocityModel object
+    velocity = VelocityModel(lnm_model, corr)
     
-    # Compute zgain
-    zgain_patients = zgain.score(patients)
+    # Compute z-gain
+    zgain_patients = velocity.score(patients)
     # Display the first few z-gain scores for the specified region
     zgain_patients.sel(response_vars=REGION).to_series().head()
 
@@ -432,7 +447,7 @@ everything in one table.
     control_scores = pd.DataFrame(
         {
             "z_diff": zdiff.score(reference_controls).sel(response_vars=REGION).to_series(),
-            "z_gain": zgain.score(reference_controls).sel(response_vars=REGION).to_series(),
+            "z_gain": velocity.score(reference_controls).sel(response_vars=REGION).to_series(),
             "group": "control",
         }
     )
@@ -632,7 +647,7 @@ normal range:
 Below we draw the patient with the most negative z-gain (red) and the
 control with the most typical change (blue).
 
-``ZGainScore.get_thrivelines()`` computes the thrivelines from the
+``VelocityModel.get_thrivelines()`` computes the thrivelines from the
 correlation matrix, and ``plot_thrivelines()`` draws them on the
 normative model’s centile chart.
 
@@ -643,7 +658,7 @@ normative model’s centile chart.
     youngest, oldest = int(lnm_ages.min()), int(lnm_ages.max()) + 1
     
     # Compute thrivelines
-    thrivelines = zgain.get_thrivelines(
+    thrivelines = velocity.get_thrivelines(
         centiles=CENTILES, # the centiles at which thrivelines start
         covariate_range=(youngest, oldest),
     )

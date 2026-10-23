@@ -281,7 +281,7 @@ def plot_thrivelines(
         The model used to compute centile curves.
     thrivelines : pd.DataFrame
         Pre-computed thriveline table from
-        :meth:`~pcntoolkit.longitudinal_score.zgain_score.ZGainScore.get_thrivelines`.
+        ``VelocityModel.get_thrivelines``.
     centiles : list[float] | np.ndarray | None, optional
         Centiles to plot. If None, the model defaults are used.
     covariate : str | None, optional
@@ -1380,7 +1380,7 @@ def _compute_centile_curves(
     model : NormativeModel
         Fitted model used to evaluate the curves.
     centile_data : NormData
-        Grid from :func:`_build_centile_grid`; gains a ``centiles``
+        Grid from ``_build_centile_grid``; gains a ``centiles``
         variable, and a ``Yhat`` variable when ``show_yhat`` is True.
     centiles : list[float] | np.ndarray | None, optional
         Centiles to compute, as proportions in (0, 1). None uses the model

@@ -14,6 +14,8 @@ import xarray as xr
 
 from pcntoolkit.math_functions.velocity import compute_correlation_matrix
 
+from .longitudinal_score import LongitudinalScore
+
 # Import heavy toolkit types only during static type checking.
 if TYPE_CHECKING:
     from pcntoolkit.dataio.norm_data import NormData
@@ -25,8 +27,8 @@ class CorrelationMatrix:
 
     The matrix records how strongly a subject's z-scores at two ages correlate.
 
-    Do not call ``CorrelationMatrix(...)`` directly. Use :meth:`compute` to
-    estimate one from a cohort, or :meth:`load` to read one from CSV files.
+    Do not call ``CorrelationMatrix(...)`` directly. Use ``compute`` to
+    estimate one from a cohort, or ``load`` to read one from CSV files.
 
     Examples
     --------
@@ -46,22 +48,22 @@ class CorrelationMatrix:
 
     >>> corr = CorrelationMatrix.load("my_matrices/rh_G_front_middle_thickness.csv")
 
-    Either way, pass it to a score:
+    Either way, pass it to a velocity model:
 
-    >>> from pcntoolkit import ZGainScore
-    >>> zgain = ZGainScore(model, corr)
+    >>> from pcntoolkit import VelocityModel
+    >>> velocity = VelocityModel(model, corr)
 
     Parameters
     ----------
     matrix : xr.DataArray
-        Correlation matrix, filled in by :meth:`compute` and :meth:`load`.
+        Correlation matrix, filled in by ``compute`` and ``load``.
     covariate : str, default "age"
         Covariate the matrix is indexed by.
     bandwidth : int, optional
         Widest age gap with an estimated correlation. Correlations for wider
         gaps are 0.
     max_correlation : float, default 0.99
-        Upper bound applied by :meth:`get`, keeping the correlation away from 1
+        Upper bound applied by ``get``, keeping the correlation away from 1
         so that ``sqrt(1 - r**2)`` stays away from zero.
     n_subjects : int, optional
         Number of subjects in the cohort the matrix was estimated from.
@@ -123,7 +125,7 @@ class CorrelationMatrix:
         covariate : str, default "age"
             Covariate to index the matrix by.
         max_correlation : float, default 0.99
-            Upper bound applied by :meth:`get`.
+            Upper bound applied by ``get``.
 
         Returns
         -------
@@ -137,11 +139,6 @@ class CorrelationMatrix:
             If ``data`` has no predictions, is not longitudinal, or if
             ``max_correlation`` is out of range.
         """
-        # Imported here to avoid a circular import at module load.
-        from pcntoolkit.longitudinal_score.longitudinal_score import (
-            LongitudinalScore,
-        )
-
         LongitudinalScore._check_is_predicted(data)
         LongitudinalScore._check_is_longitudinal(data)
 
@@ -174,7 +171,7 @@ class CorrelationMatrix:
         """Load correlation matrices from a folder of CSVs, or from one CSV.
 
         Each CSV holds one response variable and is named after it, as
-        written by :meth:`save`::
+        written by ``save``::
 
             <path>/<response_var>.csv
 
@@ -189,11 +186,11 @@ class CorrelationMatrix:
         Parameters
         ----------
         path : str
-            Folder written by :meth:`save`, or one CSV inside it.
+            Folder written by ``save``, or one CSV inside it.
         covariate : str, default "age"
             Covariate the matrix is indexed by.
         max_correlation : float, default 0.99
-            Upper bound applied by :meth:`get`.
+            Upper bound applied by ``get``.
 
         Returns
         -------
@@ -271,16 +268,15 @@ class CorrelationMatrix:
     def load_velocity_pickle(cls, path: str) -> CorrelationMatrix:
         """Load a correlation matrix from a pickled velocity model.
 
-        .. note::
-           This reads one specific layout: the velocity models produced by
-           Johanna Bayer's pipeline. It is not a general-purpose loader. Use it
-           once to convert such a file, then save it with :meth:`save` and load
-           the result with :meth:`load`.
+        Note: this reads one specific layout: the velocity models produced by
+        Johanna Bayer's pipeline. It is not a general-purpose loader. Use it
+        once to convert such a file, then save it with ``save`` and load
+        the result with ``load``.
 
         Those files hold a dict whose ``A_sparse_predict`` entry is the
         correlations, stored lower-triangular with a zero diagonal. They are
         mirrored and given a unit diagonal here to match the layout produced by
-        :func:`~pcntoolkit.math_functions.velocity.compute_correlation_matrix`.
+        ``compute_correlation_matrix``.
 
         The region name is not inside the file. It appears only in the directory
         name, laid out as ``.../batch_<n>_<region>/Velocity/<file>.pkl``, so it
