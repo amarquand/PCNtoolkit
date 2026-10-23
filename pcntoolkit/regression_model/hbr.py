@@ -18,7 +18,7 @@ from pcntoolkit.math_functions.likelihood import (
 )
 from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.util.migration import registry
-from pcntoolkit.util.output import Errors, Output
+from pcntoolkit.util.output import Errors, Output, Warnings
 
 
 class HBR(RegressionModel):
@@ -109,12 +109,15 @@ class HBR(RegressionModel):
         provided = {k: v for k, v in legacy.items() if v is not None}
         if len(provided) > 0:
             if inference_method is not None:
-                Output.error(
-                    f"The MCMC kwargs {list(legacy.keys())} have been provided directly to HBR instead of through the MCMC InferenceMethod, while an InferenceMethod has also been provided. Only one of those can be provided. Please consolidate into an MCMC InferenceMethod object."
+                raise ValueError(
+                    Output.error(
+                        Errors.ERROR_HBR_MCMC_KWARGS_AND_INFERENCE_METHOD,
+                        kwargs=list(provided.keys()),
+                    )
                 )
             else:
                 Output.warning(
-                    f"The MCMC kwargs {list(legacy.keys())} have been provided directly to HBR instead of through the MCMC InferenceMethod. This behavior will be deprecated in the future. We will create a default MCMC InferenceMethod and replace its attributes with the ones you provided. "
+                    Warnings.HBR_MCMC_KWARGS_DEPRECATED, kwargs=list(provided.keys())
                 )
                 inference_method = MCMC()
                 for k, v in provided.items():
@@ -384,11 +387,7 @@ class HBR(RegressionModel):
             New model instance
         """
         if args.get("inference_method", "mcmc") != "mcmc":
-            raise ValueError(
-                Output.error(
-                    "Only inference_method='mcmc' is supported from command line arguments."
-                )
-            )
+            raise ValueError(Output.error(Errors.ERROR_HBR_FROM_ARGS_ONLY_MCMC))
         return cls(
             name,
             is_fitted=args.get("is_fitted", False),
@@ -590,12 +589,11 @@ class MCMC(InferenceMethod):
                     path,
                     os.path.basename(my_dict.get("data_tree_path", "data_tree.nc")),
                 )
-                print(data_tree_path)
                 mcmc.is_fitted = True
                 mcmc.load_data_tree(data_tree_path)
             else:
-                AttributeError(
-                    "The model that you are trying to load is marked as fitted but does not contain a DataTree"
+                raise AttributeError(
+                    Output.error(Errors.ERROR_HBR_FITTED_BUT_NO_DATA_TREE_PATH)
                 )
         mcmc.is_from_dict = True
         return mcmc
@@ -627,8 +625,7 @@ class LaPlace(InferenceMethod):
             import pymc_extras as pmx  # type: ignore
         except ImportError as exc:
             raise ImportError(
-                "inference_method='laplace' requires pymc-extras. It ships as a "
-                "dependency; reinstall it with: pip install 'pymc-extras>=0.11.0'"
+                Output.error(Errors.ERROR_HBR_LAPLACE_REQUIRES_PYMC_EXTRAS)
             ) from exc
         with model:
             self.data_tree = pmx.fit_laplace(
@@ -648,12 +645,11 @@ class LaPlace(InferenceMethod):
         if is_fitted:
             if path is not None:
                 data_tree_path = os.path.join(path, "data_tree.nc")
-                print(data_tree_path)
                 laplace.is_fitted = True
                 laplace.load_data_tree(data_tree_path)
             else:
-                AttributeError(
-                    "The model that you are trying to load is marked as fitted but does not contain a DataTree"
+                raise AttributeError(
+                    Output.error(Errors.ERROR_HBR_FITTED_BUT_NO_DATA_TREE_PATH)
                 )
         laplace.is_from_dict = True
         return laplace
