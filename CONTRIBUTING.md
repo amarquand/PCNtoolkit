@@ -40,7 +40,7 @@ follow the steps below to set your local development environment:
     it.
 
     ``` bash
-    conda create -n ptk-dev python=3.12
+    conda create -n ptk-dev python=3.13
     conda activate ptk-dev
     ```
 
@@ -64,6 +64,14 @@ follow the steps below to set your local development environment:
 > defined as short scripts in the `Makefile`. For example, steps 3 and 4
 > can be done with a single command: `make dev-setup`. After it, you
 > should activate the environment with `conda activate ptk-dev`.
+
+> **Note**
+> **Alternative without conda:** You can use
+> [uv](https://docs.astral.sh/uv/) instead of conda. You can run
+> `make uv-dev-setup` to create the same virtual environment as conda,
+> in the `.ptk-dev` folder. After it, activate the environment with
+> `source .ptk-dev/bin/activate` on Linux and macOS, or with
+> `.ptk-dev\Scripts\activate` on Windows.
 
 Congrats! You have now set up your development environment.
 
