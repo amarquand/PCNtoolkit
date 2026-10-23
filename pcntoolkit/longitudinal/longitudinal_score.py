@@ -100,7 +100,7 @@ class LongitudinalScore(ABC):
     # ------------------------------------------------------------------ #
 
     @staticmethod
-    def _check_is_predicted(data: NormData, required: tuple[str, ...] = ("Z",)) -> None:
+    def _check_is_predicted(data: NormData, *, required: tuple[str, ...]) -> None:
         """Ensure that the required prediction outputs (e.g., 'Z'. 'Yhat') are present 
         in the data."""
         for var in required:

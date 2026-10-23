@@ -59,7 +59,7 @@ def test_get_visits_requires_numeric_labels(
         predicted_norm_data_factory(df).get_visits()
 
 
-def test_score_validation_requires_z_by_default(predicted_longitudinal_norm_data):
+def test_score_validation_requires_z(predicted_longitudinal_norm_data):
     data= predicted_longitudinal_norm_data.drop_vars("Z")
     with pytest.raises(ValueError, match="'Z'"):
         LongitudinalScore._check_is_predicted(data, required=("Z",))
