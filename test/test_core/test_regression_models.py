@@ -12,7 +12,7 @@ from pcntoolkit.math_functions.prior import (
     make_prior,
 )
 from pcntoolkit.regression_model.blr import BLR
-from pcntoolkit.regression_model.hbr import HBR  # noqa: F401, F403
+from pcntoolkit.regression_model.hbr import HBR, LaPlace  # noqa: F401, F403
 from test.fixtures.data_fixtures import *  # noqa: F401, F403
 from test.fixtures.hbr_model_fixtures import *  # noqa: F401, F403
 from test.fixtures.norm_data_fixtures import *  # noqa: F401, F403
@@ -244,9 +244,8 @@ class TestHBR:
         assert isinstance(prior.intercept, RandomPrior)
         assert isinstance(prior.slope, RandomPrior)
 
-    @pytest.mark.parametrize("inference_method", ["pathfinder", "laplace"])
-    def test_model_fit_variational_inference(self, inference_method):
-        """Test fitting with the pymc-extras approximate inference methods."""
+    def test_model_fit_laplace(self):
+        """Test fitting with the pymc-extras Laplace approximation."""
         pytest.importorskip("pymc_extras")
 
         # The shared synthetic_data fixture is unseeded. Here we choose a seed to make
@@ -288,10 +287,8 @@ class TestHBR:
         # fit HBR
         n_draws = 50
         model = HBR(
-            f"test_hbr_{inference_method}",
-            inference_method=inference_method,
-            vi_draws=n_draws,
-            progressbar=False,
+            "test_hbr_laplace",
+            inference_method=LaPlace(draws=n_draws, progressbar=False),
         )
         model.fit(data.X, mapped_batch_effects, be_maps, data.Y)
 

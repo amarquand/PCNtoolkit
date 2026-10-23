@@ -125,6 +125,11 @@ class HBR(RegressionModel):
         self.pymc_model: pm.Model = None  # type: ignore
         self.be_maps: dict = None  # type:ignore
 
+    @property
+    def idata(self) -> xr.DataTree:
+        """Posterior samples stored on the inference method."""
+        return self.inference_method.data_tree
+
     def fit(
         self,
         X: xr.DataArray,
@@ -353,6 +358,7 @@ class HBR(RegressionModel):
         )
         self = cls(
             name=name,
+            is_from_dict=True,
             likelihood=likelihood,
             inference_method=inference_method,
         )
@@ -377,18 +383,19 @@ class HBR(RegressionModel):
         HBR
             New model instance
         """
-        likelihood = Likelihood.from_args(args)
-        is_fitted = args.get("is_fitted", False)
-        is_from_dict = True
-        inference_method = args.get("inference_method", "mcmc")
-        self = cls(
+        if args.get("inference_method", "mcmc") != "mcmc":
+            raise ValueError(
+                Output.error(
+                    "Only inference_method='mcmc' is supported from command line arguments."
+                )
+            )
+        return cls(
             name,
-            likelihood,
-            is_fitted,
-            is_from_dict,
-            inference_method,
+            is_fitted=args.get("is_fitted", False),
+            is_from_dict=True,
+            likelihood=Likelihood.from_args(args),
+            inference_method=MCMC(**{k: args[k] for k in MCMC_INIT_KEYS if k in args}),
         )
-        return self
 
     def compute_yhat(self, data, responsevar, X, be):
         fn = self.likelihood.yhat
@@ -520,6 +527,17 @@ class InferenceMethod(ABC):
                 ) from exc
 
 
+MCMC_INIT_KEYS = [
+    "draws",
+    "tune",
+    "cores",
+    "chains",
+    "init",
+    "nuts_sampler",
+    "progressbar",
+]
+
+
 class MCMC(InferenceMethod):
     def __init__(
         self,
@@ -564,26 +582,14 @@ class MCMC(InferenceMethod):
 
     @classmethod
     def from_dict(cls, my_dict: Dict[str, Any], path: Optional[str] = None) -> MCMC:
-        draws: int = my_dict["draws"]
-        tune: int = my_dict["tune"]
-        cores: int = my_dict["cores"]
-        chains: int = my_dict["chains"]
-        nuts_sampler: str = my_dict["nuts_sampler"]
-        init: str = my_dict["init"]
-        progressbar: bool = my_dict["progressbar"]
-        is_fitted: bool = my_dict["is_fitted"]
-        mcmc = cls(
-            draws=draws,
-            tune=tune,
-            cores=cores,
-            chains=chains,
-            nuts_sampler=nuts_sampler,
-            init=init,
-            progressbar=progressbar,
-        )
-        if is_fitted:
+        mcmc = cls(**{k: my_dict[k] for k in MCMC_INIT_KEYS if k in my_dict})
+        if my_dict["is_fitted"]:
             if path is not None:
-                data_tree_path = os.path.join(path, "data_tree.nc")
+                # Models saved before v1.4.0 store their samples in idata.nc.
+                data_tree_path = os.path.join(
+                    path,
+                    os.path.basename(my_dict.get("data_tree_path", "data_tree.nc")),
+                )
                 print(data_tree_path)
                 mcmc.is_fitted = True
                 mcmc.load_data_tree(data_tree_path)
