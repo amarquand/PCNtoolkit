@@ -183,6 +183,17 @@ def test_zgain_rejects_unpredicted_data(
         scorer.score(bad)
 
 
+def test_zgain_does_not_need_yhat(
+    fitted_norm_blr_model,
+    blr_correlation_matrix,
+    blr_predicted_longitudinal_norm_data,
+):
+    scorer = VelocityModel(fitted_norm_blr_model, blr_correlation_matrix)
+    data = blr_predicted_longitudinal_norm_data.drop_vars("Yhat")
+    scores = scorer.score(data)
+    assert scores.sizes["subjects"] == 2
+
+
 def test_zgain_rejects_duplicate_visit_labels(
     fitted_norm_blr_model,
     blr_correlation_matrix,

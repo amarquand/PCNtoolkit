@@ -181,6 +181,12 @@ def test_compute_rejects_missing_z(longitudinal_cohort_norm_data):
         CorrelationMatrix.compute(data, bandwidth=1)
 
 
+def test_compute_does_not_need_yhat(longitudinal_cohort_norm_data):
+    data = longitudinal_cohort_norm_data.drop_vars("Yhat")
+    corr = CorrelationMatrix.compute(data, bandwidth=1)
+    assert corr.n_subjects == 30
+
+
 def test_invalid_max_correlation(correlation_matrix_array_factory):
     matrix = correlation_matrix_array_factory()
     with pytest.raises(ValueError, match="max_correlation"):

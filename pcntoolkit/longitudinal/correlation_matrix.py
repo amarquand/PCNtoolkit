@@ -139,7 +139,8 @@ class CorrelationMatrix:
             If ``data`` has no predictions, is not longitudinal, or if
             ``max_correlation`` is out of range.
         """
-        LongitudinalScore._check_is_predicted(data)
+        # Correlation matrix computation needs Z-scores to be present in the data.
+        LongitudinalScore._check_is_predicted(data, required=("Z",))
         LongitudinalScore._check_is_longitudinal(data)
 
         matrix = compute_correlation_matrix(data, bandwidth, covariate)

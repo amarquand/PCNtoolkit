@@ -94,10 +94,11 @@ class ZDiffScore(LongitudinalScore):
             is also stored on the instance as ``zdiff`` for later retrieval.
         """
         # Run checks first for both the reference and score data.
-        self._check_is_predicted(self.reference_data)
+        # z-diff is built from residuals y - Yhat, so it needs Yhat, not Z.
+        self._check_is_predicted(self.reference_data, required=("Yhat",))
         self._check_is_longitudinal(self.reference_data)
         self._check_at_most_two_visits(self.reference_data)
-        self._check_is_predicted(score_data)
+        self._check_is_predicted(score_data, required=("Yhat",))
         self._check_is_longitudinal(score_data)
         self._check_at_most_two_visits(score_data)
 
