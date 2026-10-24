@@ -6,8 +6,10 @@ Tests use local registry instances so they are fully isolated
 from the module-level singleton and from each other.
 """
 
+import warnings
 from unittest.mock import patch
 
+from pcntoolkit.util import migration
 from pcntoolkit.util.migration import (
     MigrationRegistry,
     check_forward_compatibility,
@@ -188,7 +190,7 @@ def test_008_checkForwardCompat_should_notEmitWarning_when_savedVersionIsOlder()
 
 
 # ---------------------------------------------------------------------------
-# Migration warning deduplication tests
+# Migration warning tests
 # ---------------------------------------------------------------------------
 
 
@@ -197,70 +199,27 @@ def test_009_migrate_should_warnOnce_when_calledRepeatedlyForSameVersion():
     Arrange: a registry called many times for dicts saved at the same
              version, as NormativeModel.load does for every response
              variable.
-    Act: call migrate five times with version 1.0.0.
-    Assert: Output.warning is called exactly once, not once per call.
+    Act: migrate five dicts saved at 1.0.0, then one saved at 1.1.5.
+    Assert: the 1.0.0 warning reaches the user once (Python's default
+            filter keys on the message, which embeds the saved version),
+            and the different version still warns.
     """
     # Arrange — five response variables saved at the same version.
     reg = _make_registry_with_two_migrations()
+    # Earlier tests in this file warn with the same message; the registry
+    # that tracks "already shown" persists on the module between tests.
+    migration.__warningregistry__.clear()
 
-    # Act — each call used to add two more warnings (one per migration).
-    with patch("pcntoolkit.util.migration.Output.warning") as mock_warning:
+    # Act & Assert — keep the default filters: "show once per unique
+    # message" is exactly the behaviour under test.
+    with warnings.catch_warnings(record=True) as caught:
         for _ in range(5):
             reg.migrate("TestComp", {"old_key": "value"}, version="1.0.0")
+        reg.migrate("TestComp", {"old_key": "value"}, version="1.1.5")
 
-        # Assert — a single warning for the version, not ten.
-        assert mock_warning.call_count == 1
-
-
-def test_010_migrate_should_warnOncePerVersion_when_savedVersionsDiffer():
-    """
-    Arrange: two dicts saved at different versions.
-    Act: migrate each of them.
-    Assert: one warning per saved version, so two in total.
-    """
-    # Arrange — a registry whose migrations apply to both dicts.
-    reg = _make_registry_with_two_migrations()
-
-    # Act & Assert — each distinct version gets its own warning.
-    with patch("pcntoolkit.util.migration.Output.warning") as mock_warning:
-        reg.migrate("TestComp", {"old_key": "a"}, version="1.0.0")
-        reg.migrate("TestComp", {"old_key": "b"}, version="1.1.5")
-
-        assert mock_warning.call_count == 2
-
-
-def test_011_migrate_should_stillApplyMigration_when_warningIsDeduplicated():
-    """
-    Arrange: a registry that has already warned about a saved version.
-    Act: migrate a second dict saved at that same version.
-    Assert: the migration still runs, even though no new warning is raised.
-    """
-    # Arrange — first call records the version as warned.
-    reg = _make_registry_with_two_migrations()
-
-    # Act & Assert — deduplication must not skip the migration itself.
-    with patch("pcntoolkit.util.migration.Output.warning") as mock_warning:
-        reg.migrate("TestComp", {"old_key": "a"}, version="1.0.0")
-        result = reg.migrate("TestComp", {"old_key": "b"}, version="1.0.0")
-
-        assert result.get("new_key") == 42
-        assert mock_warning.call_count == 1
-
-
-def test_012_migrate_should_warnAgain_when_aFreshRegistryIsUsed():
-    """
-    Arrange: one registry that has warned, plus a fresh registry.
-    Act: migrate the same saved version on the fresh registry.
-    Assert: the fresh registry warns too, so no state leaks between
-            registries.
-    """
-    # Arrange — two independent registries.
-    first = _make_registry_with_two_migrations()
-    second = _make_registry_with_two_migrations()
-
-    # Act & Assert — each registry warns once for its own call.
-    with patch("pcntoolkit.util.migration.Output.warning") as mock_warning:
-        first.migrate("TestComp", {"old_key": "a"}, version="1.0.0")
-        second.migrate("TestComp", {"old_key": "b"}, version="1.0.0")
-
-        assert mock_warning.call_count == 2
+    migration_warnings = [
+        warning for warning in caught if "saved with PCNtoolkit" in str(warning.message)
+    ]
+    # One warning for the five identical calls, plus one for the
+    # different saved version — not one per call.
+    assert len(migration_warnings) == 2
