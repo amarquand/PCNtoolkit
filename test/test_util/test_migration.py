@@ -6,8 +6,10 @@ Tests use local registry instances so they are fully isolated
 from the module-level singleton and from each other.
 """
 
+import warnings
 from unittest.mock import patch
 
+from pcntoolkit.util import migration
 from pcntoolkit.util.migration import (
     MigrationRegistry,
     check_forward_compatibility,
@@ -185,3 +187,39 @@ def test_008_checkForwardCompat_should_notEmitWarning_when_savedVersionIsOlder()
     with patch("pcntoolkit.util.migration.Output.warning") as mock_warning:
         check_forward_compatibility(saved_model, current_pcntoolkit)
         assert mock_warning.call_count == 0
+
+
+# ---------------------------------------------------------------------------
+# Migration warning tests
+# ---------------------------------------------------------------------------
+
+
+def test_009_migrate_should_warnOnce_when_calledRepeatedlyForSameVersion():
+    """
+    Arrange: a registry called many times for dicts saved at the same
+             version, as NormativeModel.load does for every response
+             variable.
+    Act: migrate five dicts saved at 1.0.0, then one saved at 1.1.5.
+    Assert: the 1.0.0 warning reaches the user once (Python's default
+            filter keys on the message, which embeds the saved version),
+            and the different version still warns.
+    """
+    # Arrange — five response variables saved at the same version.
+    reg = _make_registry_with_two_migrations()
+    # Earlier tests in this file warn with the same message; the registry
+    # that tracks "already shown" persists on the module between tests.
+    migration.__warningregistry__.clear()
+
+    # Act & Assert — keep the default filters: "show once per unique
+    # message" is exactly the behaviour under test.
+    with warnings.catch_warnings(record=True) as caught:
+        for _ in range(5):
+            reg.migrate("TestComp", {"old_key": "value"}, version="1.0.0")
+        reg.migrate("TestComp", {"old_key": "value"}, version="1.1.5")
+
+    migration_warnings = [
+        warning for warning in caught if "saved with PCNtoolkit" in str(warning.message)
+    ]
+    # One warning for the five identical calls, plus one for the
+    # different saved version — not one per call.
+    assert len(migration_warnings) == 2

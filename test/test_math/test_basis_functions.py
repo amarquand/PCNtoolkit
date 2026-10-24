@@ -1,5 +1,5 @@
 import importlib.metadata
-from unittest.mock import patch
+import warnings
 
 import numpy as np
 import pytest
@@ -101,10 +101,17 @@ def test_composite_from_dict_passes_version_to_parts() -> None:
     composite.fit(X)
 
     current_version = importlib.metadata.version("pcntoolkit")
-    with patch("pcntoolkit.util.migration.Output.warning") as mock_warning:
+    with warnings.catch_warnings(record=True) as caught:
         BasisFunction.from_dict(composite.to_dict(), version=current_version)
 
-    assert mock_warning.call_count == 0
+    # The parts carry no ptk_version of their own; if from_dict failed to
+    # pass the version down, they would default to 0.0.0 and the 1.2.0post1
+    # migration would fire for them. Assert on that message specifically
+    # rather than on zero warnings, so an unrelated deprecation from a
+    # dependency cannot fail this test.
+    assert [w for w in caught if "saved with v0.0.0" in str(w.message)] == []
+
+
 def test_composite_basis_interaction_linear():
     X = np.array(
         [
